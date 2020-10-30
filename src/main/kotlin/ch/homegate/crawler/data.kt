@@ -86,7 +86,7 @@ data class ListingResponse(
 data class Listing(
         val address: Address,
         val characteristics: Characteristics,
-        val localization: Map<String, Localization>,
+        val localization: Localizations,
         val prices: Prices,
 )
 
@@ -115,6 +115,11 @@ data class Characteristics(
         ).joinToString(", ")
     }
 }
+
+data class Localizations(
+        val de: Localization,
+        val primary: String,
+)
 
 data class Localization(
         val attachments: List<Attachment>,
