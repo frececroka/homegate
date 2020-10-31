@@ -32,7 +32,8 @@ class FirestoreListingsRecorder : ListingsRecorder {
             .setCredentials(GoogleCredentials.getApplicationDefault())
             .build()
     private val db = firestoreOptions.service
-    private val collection = db.collection("listings")
+    private val collectionName = System.getenv("FIRESTORE_COLLECTION")
+    private val collection = db.collection(collectionName)
 
     override fun add(id: String): Boolean {
         collection.document(id).create(Entry()).get()
