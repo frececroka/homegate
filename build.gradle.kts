@@ -23,7 +23,8 @@ dependencies {
     implementation("com.google.cloud:google-cloud-firestore:1.32.0")
     implementation("io.ktor:ktor-client-core:1.4.1")
     implementation("io.ktor:ktor-client-cio:1.4.1")
-    implementation("com.beust:klaxon:5.0.1")
+    implementation("io.ktor:ktor-client-json:1.4.1")
+    implementation("io.ktor:ktor-client-gson:1.4.1")
     implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:5.0.0")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
