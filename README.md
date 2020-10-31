@@ -15,7 +15,7 @@ Create GCP service accounts for the development and production environments with
 Configure the development and production environments by placing `terraform.tfvars` files into the `terraform/dev` and `terraform/prod` directories. These files look like this:
 
 ```
-project = "homegate-294112"
+project = "..."
 region = "europe-west6"
 zone = "europe-west6-a"
 
@@ -23,7 +23,7 @@ telegram_token = "..."
 chat_id = "..."
 ```
 
-Assign to `telegram_token` the access token for your Telegram bot and to `chat_id` the ID of the Telegram chat that updates are sent to. 
+Assign to `project` the project ID of the GCP project that resources will be created in, to `telegram_token` the access token for your Telegram bot, and to `chat_id` the ID of the Telegram chat that updates are sent to. 
 
 Now initialize Terraform by running `terraform init` once in the `terraform/dev` directory and once in the `terraform/prod` directory.
 
