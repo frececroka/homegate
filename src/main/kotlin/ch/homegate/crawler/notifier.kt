@@ -4,6 +4,7 @@ import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.entities.ParseMode
 import io.ktor.util.*
 import org.apache.http.client.utils.URIBuilder
+import org.slf4j.LoggerFactory
 import java.net.URI
 
 @KtorExperimentalAPI
@@ -12,6 +13,8 @@ class HomegateNotifier(
         private val listingsRecorder: ListingsRecorder,
 ) {
 
+    private val log = LoggerFactory.getLogger(javaClass)
+
     private val bot = bot {
         token = System.getenv("TELEGRAM_TOKEN")
     }
@@ -19,13 +22,19 @@ class HomegateNotifier(
     private val chatId = System.getenv("CHAT_ID").toLong()
 
     suspend fun notify(request: ListingsRequest) {
+        log.info("Searching for listings")
+        log.debug("request = $request")
         val response = homegate.search(request)
+        log.info("Received ${response.results.size} results")
         for (result in response.results) {
             if (listingsRecorder.isNew(result.id)) {
+                log.info("Sending message for new result ${result.id}")
                 bot.sendMessage(chatId, buildMessage(result), parseMode = ParseMode.MARKDOWN)
+                log.debug("Marking result ${result.id} as old")
                 listingsRecorder.add(result.id)
             }
         }
+        log.info("Finished")
     }
 
     private fun buildMessage(result: ListingResponse): String {
