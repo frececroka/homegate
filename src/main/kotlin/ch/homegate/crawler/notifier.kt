@@ -31,9 +31,10 @@ class HomegateNotifier(
     private fun buildMessage(result: ListingResponse): String {
         val listing = result.listing
         val calendarLink = buildCalendarLink(result)
+        val mapsLink = buildMapsLink(listing.address)
         return """
             ${listing.address}: ${listing.characteristics} for CHF ${listing.prices.rent.gross}
-            \[[open listing](${result.url})] \[[add to calendar]($calendarLink)]
+            \[[open listing](${result.url})] \[[open map]($mapsLink)] \[[add to calendar]($calendarLink)]
         """.trimIndent()
     }
 
@@ -50,6 +51,13 @@ class HomegateNotifier(
                 .addParameter("text", address.street)
                 .addParameter("details", details)
                 .addParameter("location", address.toString())
+                .build()
+    }
+
+    private fun buildMapsLink(address: Address): URI {
+        return URIBuilder("https://www.google.com/maps/search/")
+                .addParameter("api", "1")
+                .addParameter("query", address.toString())
                 .build()
     }
 
