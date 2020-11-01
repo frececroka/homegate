@@ -10,7 +10,7 @@ The bot can be deployed to the Google Cloud Platform.
 
 ### Setup
 
-Create GCP service accounts for the development and production environments with role Project/Editor and save the JSON file with the credentials to `terraform/dev/credentials.json` and `terraform/prod/credentials.json`, respectively. You may use the same service account for both.
+Create GCP service accounts for the development and production environments with roles "Project/Editor" and "IAM/Security Admin" and save the JSON file with the credentials to `terraform/dev/credentials.json` and `terraform/prod/credentials.json`, respectively. You may use the same service account for both.
 
 Configure the development and production environments by placing `terraform.tfvars` files into the `terraform/dev` and `terraform/prod` directories. These files look like this:
 
