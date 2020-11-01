@@ -34,4 +34,4 @@ fun buildReplyKeyboard(selected: ReplyOption? = null): InlineKeyboardMarkup {
 }
 
 private fun buildReplyKeyboardButton(title: String, data: String, selected: Boolean = false) =
-    InlineKeyboardButton(title + if (selected) " ✅" else "", callbackData = data)
+    InlineKeyboardButton((if (selected) "✅ " else "") + title, callbackData = data)
