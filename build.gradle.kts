@@ -40,6 +40,16 @@ application {
     mainClassName = "ch.homegate.crawler.MainKt"
 }
 
+tasks.register<JavaExec>("runCrawler") {
+    classpath = sourceSets.main.get().runtimeClasspath
+    main = "ch.homegate.crawler.MainKt"
+}
+
+tasks.register<JavaExec>("runResponder") {
+    classpath = sourceSets.main.get().runtimeClasspath
+    main = "ch.homegate.responder.MainKt"
+}
+
 tasks.shadowJar {
     mergeServiceFiles()
 }

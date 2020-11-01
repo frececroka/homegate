@@ -1,4 +1,4 @@
-package ch.homegate.crawler
+package ch.homegate
 
 import com.github.kotlintelegrambot.entities.InlineKeyboardButton
 import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup

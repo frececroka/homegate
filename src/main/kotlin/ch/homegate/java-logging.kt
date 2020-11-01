@@ -1,4 +1,4 @@
-package ch.homegate.crawler
+package ch.homegate
 
 import java.util.logging.Level
 import java.util.logging.Logger

@@ -30,7 +30,7 @@ resource "google_storage_bucket_object" "source" {
 
 resource "google_cloudfunctions_function" "crawler" {
   name = "crawler-${var.name}"
-  entry_point = "ch.homegate.crawler.CrawlerFunction"
+  entry_point = "ch.homegate.crawler.Function"
   runtime = "java11"
 
   source_archive_bucket = google_storage_bucket.functions.name
@@ -51,9 +51,9 @@ resource "google_cloudfunctions_function" "crawler" {
   }
 }
 
-resource "google_cloudfunctions_function" "query_processor" {
-  name = "query-${var.name}"
-  entry_point = "ch.homegate.crawler.QueryFunction"
+resource "google_cloudfunctions_function" "responder" {
+  name = "responder-${var.name}"
+  entry_point = "ch.homegate.responder.Function"
   runtime = "java11"
 
   source_archive_bucket = google_storage_bucket.functions.name
@@ -69,9 +69,9 @@ resource "google_cloudfunctions_function" "query_processor" {
 }
 
 resource "google_cloudfunctions_function_iam_member" "invoker" {
-  project = google_cloudfunctions_function.query_processor.project
-  region = google_cloudfunctions_function.query_processor.region
-  cloud_function = google_cloudfunctions_function.query_processor.name
+  project = google_cloudfunctions_function.responder.project
+  region = google_cloudfunctions_function.responder.region
+  cloud_function = google_cloudfunctions_function.responder.name
   role = "roles/cloudfunctions.invoker"
   member = "allUsers"
 }

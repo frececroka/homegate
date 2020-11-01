@@ -2,7 +2,15 @@
 
 ## Test Locally
 
-To configure the bot for local testing, set the `TELEGRAM_TOKEN` and `CHAT_ID` environment variables accordingly. The former is the access token of your Telegram bot, and the latter is the ID of the Telegram chat that updates are sent to. Afterwards, you can run the bot locally using `./gradlew run`. The entry point is the function `ch.homegate.crawler.main` in this case. 
+To configure the bot for local testing, set the `TELEGRAM_TOKEN` and `CHAT_ID` environment variables accordingly. The former is the access token of your Telegram bot, and the latter is the ID of the Telegram chat that updates are sent to.
+
+### Crawler
+
+The crawler checks for new listings and then sends Telegram messages for each one. You can run it locally with `./gradlew runCrawler`. The entry point is the function `ch.homegate.crawler.main` in this case.
+
+### Responder
+ 
+The responder receives updates from Telegram and sends appropriate responses, like changing the reply keyboard. You can run it locally with `./gradlew runResponder`. The entry point is the function `ch.homegate.responder.main` in this case. 
 
 ## Deployment
 

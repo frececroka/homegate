@@ -1,29 +1,21 @@
-package ch.homegate.crawler
+package ch.homegate.responder
 
-import com.github.kotlintelegrambot.bot
+import ch.homegate.ReplyOption
+import ch.homegate.buildReplyKeyboard
+import ch.homegate.createBot
 import com.github.kotlintelegrambot.entities.Update
-import com.google.cloud.functions.HttpFunction
-import com.google.cloud.functions.HttpRequest
-import com.google.cloud.functions.HttpResponse
 import com.google.gson.Gson
 import org.slf4j.LoggerFactory
 
-class QueryFunction : HttpFunction {
+@Suppress("unused")
+class QueryResponder {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
+    private val bot = createBot { }
     private val gson = Gson()
 
-    private val bot = bot {
-        token = System.getenv("TELEGRAM_TOKEN")
-    }
-
-    init {
-        setupJavaLogging()
-    }
-
-    override fun service(request: HttpRequest, response: HttpResponse) {
-        val update = gson.fromJson(request.reader, Update::class.java)
+    fun respond(update: Update) {
         log.debug("update = $update")
 
         val callbackQuery = update.callbackQuery

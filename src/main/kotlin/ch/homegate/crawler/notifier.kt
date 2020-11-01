@@ -1,5 +1,7 @@
 package ch.homegate.crawler
 
+import ch.homegate.buildReplyKeyboard
+import ch.homegate.createBot
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.entities.ParseMode
 import io.ktor.util.*
@@ -15,9 +17,7 @@ class HomegateNotifier(
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    private val bot = bot {
-        token = System.getenv("TELEGRAM_TOKEN")
-    }
+    private val bot = createBot { }
 
     private val chatId = System.getenv("CHAT_ID").toLong()
 

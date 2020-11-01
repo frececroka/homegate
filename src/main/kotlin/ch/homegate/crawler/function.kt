@@ -1,5 +1,6 @@
 package ch.homegate.crawler
 
+import ch.homegate.setupJavaLogging
 import com.google.cloud.functions.BackgroundFunction
 import com.google.cloud.functions.Context
 import io.ktor.util.*
@@ -7,7 +8,7 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
-class CrawlerFunction : BackgroundFunction<PubSubMessage> {
+class Function : BackgroundFunction<PubSubMessage> {
 
     private val log = LoggerFactory.getLogger(javaClass)
 

@@ -1,5 +1,6 @@
 package ch.homegate.crawler
 
+import ch.homegate.setupJavaLogging
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
