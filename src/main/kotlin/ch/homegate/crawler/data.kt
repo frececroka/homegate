@@ -105,12 +105,13 @@ data class Address(
 data class Characteristics(
         val numberOfRooms: Double? = null,
         val totalFloorSpace: Int? = null,
+        val livingSpace: Int? = null,
         val floor: Int? = null,
 ) {
     override fun toString(): String {
         return listOfNotNull(
                 numberOfRooms?.let { "$it rooms" },
-                totalFloorSpace?.let { "$it sqm" },
+                (livingSpace ?: totalFloorSpace)?.let { "$it sqm" },
                 floor?.let { "${it + 1}-th floor" },
         ).joinToString(", ")
     }
