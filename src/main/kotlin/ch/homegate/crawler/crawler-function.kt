@@ -15,6 +15,10 @@ class CrawlerFunction : BackgroundFunction<PubSubMessage> {
     private val listingsRecorder = FirestoreListingsRecorder()
     private val notifier = HomegateNotifier(homegate, listingsRecorder)
 
+    init {
+        setupJavaLogging()
+    }
+
     override fun accept(payload: PubSubMessage, context: Context): Unit = runBlocking {
         log.info("Running bot as GCF")
         notifier.notify(listingsRequest)

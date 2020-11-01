@@ -8,6 +8,7 @@ private val log = LoggerFactory.getLogger("ch.homegate.crawler")
 
 @KtorExperimentalAPI
 fun main(): Unit = runBlocking {
+    setupJavaLogging()
     log.info("Running bot locally")
     val notifier = HomegateNotifier(HomegateClient(), LocalListingsRecorder())
     notifier.notify(listingsRequest)

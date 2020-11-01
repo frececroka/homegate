@@ -18,6 +18,10 @@ class QueryFunction : HttpFunction {
         token = System.getenv("TELEGRAM_TOKEN")
     }
 
+    init {
+        setupJavaLogging()
+    }
+
     override fun service(request: HttpRequest, response: HttpResponse) {
         val update = gson.fromJson(request.reader, Update::class.java)
         log.debug("update = $update")
