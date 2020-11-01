@@ -36,8 +36,10 @@ class QueryFunction : HttpFunction {
                 bot.editMessageReplyMarkup(
                     message.chat.id, message.messageId,
                     replyMarkup = replyMarkup)
+                log.debug("Updated message reply keyboard")
             }
             bot.answerCallbackQuery(callbackQuery.id)
+            log.debug("Acknowledged callback")
         }
     }
 
