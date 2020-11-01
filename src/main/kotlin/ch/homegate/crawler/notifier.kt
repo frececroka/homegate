@@ -29,7 +29,10 @@ class HomegateNotifier(
         for (result in response.results) {
             if (listingsRecorder.isNew(result.id)) {
                 log.info("Sending message for new result ${result.id}")
-                bot.sendMessage(chatId, buildMessage(result), parseMode = ParseMode.MARKDOWN)
+                val replyMarkup = buildReplyKeyboard()
+                bot.sendMessage(chatId, buildMessage(result),
+                    parseMode = ParseMode.MARKDOWN,
+                    replyMarkup = replyMarkup)
                 log.debug("Marking result ${result.id} as old")
                 listingsRecorder.add(result.id)
             }
