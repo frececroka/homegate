@@ -6,7 +6,7 @@ resource "google_storage_bucket_object" "source" {
 
 resource "google_cloudfunctions_function" "function" {
   name = var.function_name
-  entry_point = "ch.homegate.crawler.Main"
+  entry_point = "ch.homegate.crawler.CrawlerFunction"
   runtime = "java11"
 
   source_archive_bucket = var.bucket

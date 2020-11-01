@@ -7,7 +7,7 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
-class Main : BackgroundFunction<PubSubMessage> {
+class CrawlerFunction : BackgroundFunction<PubSubMessage> {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
