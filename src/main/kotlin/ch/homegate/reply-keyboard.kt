@@ -5,6 +5,7 @@ import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
 
 sealed class ReplyOption {
 
+    object Delete : ReplyOption()
     object Ignore : ReplyOption()
     object Contacted : ReplyOption()
     object Viewing : ReplyOption()
@@ -12,10 +13,11 @@ sealed class ReplyOption {
 
     companion object {
         fun fromString(s: String) =
-            invertToString(Ignore, Contacted, Viewing, Applied)(s)
+            invertToString(Delete, Ignore, Contacted, Viewing, Applied)(s)
     }
 
     override fun toString(): String = when (this) {
+        Delete -> "delete"
         Ignore -> "ignore"
         Contacted -> "contacted"
         Viewing -> "viewing"
@@ -25,9 +27,16 @@ sealed class ReplyOption {
 }
 
 fun buildReplyKeyboard(selected: ReplyOption? = null): InlineKeyboardMarkup {
+    val dismissButton = if (selected == ReplyOption.Ignore) {
+        // If the "Ignore" option was selected, offer to delete the message now.
+        buildReplyKeyboardButton("Delete", ReplyOption.Delete)
+    } else {
+        // If any other option was selected, offer to ignore the message instead.
+        buildReplyKeyboardButton("Ignore", ReplyOption.Ignore)
+    }
     return InlineKeyboardMarkup(listOf(
         listOf(
-            buildReplyKeyboardButton("Ignore", ReplyOption.Ignore, selected),
+            dismissButton,
             buildReplyKeyboardButton("Contacted", ReplyOption.Contacted, selected)),
         listOf(
             buildReplyKeyboardButton("Viewing", ReplyOption.Viewing, selected),
