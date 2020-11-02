@@ -11,13 +11,8 @@ sealed class ReplyOption {
     object Applied : ReplyOption()
 
     companion object {
-        fun fromString(s: String) = when (s) {
-            Ignore.toString() -> Ignore
-            Contacted.toString() -> Contacted
-            Viewing.toString() -> Viewing
-            Applied.toString() -> Applied
-            else -> throw IllegalArgumentException()
-        }
+        fun fromString(s: String) =
+            invertToString(Ignore, Contacted, Viewing, Applied)(s)
     }
 
     override fun toString(): String = when (this) {
