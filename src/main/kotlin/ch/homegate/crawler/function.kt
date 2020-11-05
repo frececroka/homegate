@@ -1,5 +1,7 @@
 package ch.homegate.crawler
 
+import ch.homegate.FirestoreListingsRecorder
+import ch.homegate.airtable.AirtableBackend
 import ch.homegate.setupJavaLogging
 import com.google.cloud.functions.BackgroundFunction
 import com.google.cloud.functions.Context
@@ -14,7 +16,10 @@ class Function : BackgroundFunction<PubSubMessage> {
 
     private val homegate = HomegateClient()
     private val listingsRecorder = FirestoreListingsRecorder()
-    private val notifier = HomegateNotifier(homegate, listingsRecorder)
+    private val airtableBackend = AirtableBackend(
+        System.getenv("AIRTABLE_API_KEY"),
+        System.getenv("AIRTABLE_APP_ID"))
+    private val notifier = HomegateNotifier(homegate, listingsRecorder, airtableBackend)
 
     init {
         setupJavaLogging()

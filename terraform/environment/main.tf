@@ -43,6 +43,8 @@ resource "google_cloudfunctions_function" "crawler" {
     TELEGRAM_TOKEN = var.telegram_token
     CHAT_ID = var.chat_id
     FIRESTORE_COLLECTION = "${var.name}.listings"
+    AIRTABLE_API_KEY = var.airtable_api_key
+    AIRTABLE_APP_ID = var.airtable_app_id
   }
 
   event_trigger {
@@ -63,6 +65,8 @@ resource "google_cloudfunctions_function" "responder" {
     TELEGRAM_TOKEN = var.telegram_token
     CHAT_ID = var.chat_id
     FIRESTORE_COLLECTION = "${var.name}.listings"
+    AIRTABLE_API_KEY = var.airtable_api_key
+    AIRTABLE_APP_ID = var.airtable_app_id
   }
 
   trigger_http = true

@@ -1,8 +1,9 @@
 package ch.homegate.crawler
 
+import ch.homegate.ListingsRecorder
+import ch.homegate.airtable.AirtableBackend
 import ch.homegate.buildReplyKeyboard
 import ch.homegate.createBot
-import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.entities.ParseMode
 import io.ktor.util.*
 import org.apache.http.client.utils.URIBuilder
@@ -11,8 +12,9 @@ import java.net.URI
 
 @KtorExperimentalAPI
 class HomegateNotifier(
-        private val homegate: HomegateClient,
-        private val listingsRecorder: ListingsRecorder,
+    private val homegate: HomegateClient,
+    private val listingsRecorder: ListingsRecorder,
+    private val airtableBackend: AirtableBackend,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -27,14 +29,30 @@ class HomegateNotifier(
         val response = homegate.search(request)
         log.info("Received ${response.results.size} results")
         for (result in response.results) {
-            if (listingsRecorder.isNew(result.id)) {
+            if (listingsRecorder.getMessageId(result.id) == null) {
+                log.info("Saving entry for result ${result.id} to Airtable")
+                airtableBackend.add(result)
                 log.info("Sending message for new result ${result.id}")
                 val replyMarkup = buildReplyKeyboard()
-                bot.sendMessage(chatId, buildMessage(result),
+                val (botResponse, exception) = bot.sendMessage(chatId, buildMessage(result),
                     parseMode = ParseMode.MARKDOWN,
                     replyMarkup = replyMarkup)
-                log.debug("Marking result ${result.id} as old")
-                listingsRecorder.add(result.id)
+                if (botResponse != null && botResponse.isSuccessful) {
+                    val createdMessageResponse = botResponse.body()
+                    if (createdMessageResponse != null) {
+                        val createdMessage = createdMessageResponse.result
+                        if (createdMessage != null) {
+                            log.debug("Marking result ${result.id} as old")
+                            listingsRecorder.add(result.id, createdMessage.messageId)
+                        } else {
+                            log.error("Telegram API did not return information about created message")
+                        }
+                    } else {
+                        log.error("Telegram API did not return information about created message")
+                    }
+                } else {
+                    log.error("Failed to send Telegram message", exception)
+                }
             }
         }
         log.info("Finished")

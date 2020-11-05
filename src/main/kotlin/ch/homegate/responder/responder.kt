@@ -1,22 +1,30 @@
 package ch.homegate.responder
 
 import ch.homegate.ReplyOption
+import ch.homegate.airtable.AirtableBackend
+import ch.homegate.airtable.State
 import ch.homegate.buildReplyKeyboard
+import ch.homegate.ListingsRecorder
 import ch.homegate.createBot
 import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.Update
 import com.google.gson.Gson
+import io.ktor.util.*
 import org.slf4j.LoggerFactory
 
+@KtorExperimentalAPI
 @Suppress("unused")
-class QueryResponder {
+class QueryResponder(
+    private val listingsRecorder: ListingsRecorder,
+    private val airtableBackend: AirtableBackend,
+) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
     private val bot = createBot { }
     private val gson = Gson()
 
-    fun respond(update: Update) {
+    suspend fun respond(update: Update) {
         log.debug("update = $update")
 
         val callbackQuery = update.callbackQuery
@@ -27,6 +35,23 @@ class QueryResponder {
                 when (selected) {
                     ReplyOption.Delete -> deleteMessage(message)
                     else -> updateReplyKeyboard(message, selected)
+                }
+                val id = listingsRecorder.getId(message.messageId)
+                if (id != null) {
+                    when (selected) {
+                        ReplyOption.Delete ->
+                            airtableBackend.delete(id)
+                        ReplyOption.Ignore ->
+                            airtableBackend.setState(id, State.Rejected)
+                        ReplyOption.Contacted ->
+                            airtableBackend.setState(id, State.Contacted)
+                        ReplyOption.Viewing ->
+                            airtableBackend.setState(id, State.Viewing)
+                        ReplyOption.Applied ->
+                            airtableBackend.setState(id, State.Applied)
+                    }
+                } else {
+                    log.warn("No listing identifier associated with message ${message.messageId}")
                 }
             }
             bot.answerCallbackQuery(callbackQuery.id)

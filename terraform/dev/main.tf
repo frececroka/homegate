@@ -21,4 +21,6 @@ module "environment" {
   name = "dev"
   telegram_token = var.telegram_token
   chat_id = var.chat_id
+  airtable_api_key = var.airtable_api_key
+  airtable_app_id = var.airtable_app_id
 }
