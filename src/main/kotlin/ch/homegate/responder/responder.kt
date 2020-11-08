@@ -1,11 +1,11 @@
 package ch.homegate.responder
 
+import ch.homegate.ListingsRecorder
 import ch.homegate.ReplyOption
 import ch.homegate.airtable.AirtableBackend
 import ch.homegate.airtable.State
 import ch.homegate.buildReplyKeyboard
-import ch.homegate.ListingsRecorder
-import ch.homegate.createBot
+import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.Update
 import com.google.gson.Gson
@@ -15,13 +15,13 @@ import org.slf4j.LoggerFactory
 @KtorExperimentalAPI
 @Suppress("unused")
 class QueryResponder(
+    private val telegram: Bot,
     private val listingsRecorder: ListingsRecorder,
     private val airtableBackend: AirtableBackend,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    private val bot = createBot { }
     private val gson = Gson()
 
     suspend fun respond(update: Update) {
@@ -54,21 +54,21 @@ class QueryResponder(
                     log.warn("No listing identifier associated with message ${message.messageId}")
                 }
             }
-            bot.answerCallbackQuery(callbackQuery.id)
+            telegram.answerCallbackQuery(callbackQuery.id)
             log.debug("Acknowledged callback")
         }
     }
 
     private fun deleteMessage(message: Message) {
         log.info("Deleting message ${message.messageId}")
-        bot.deleteMessage(message.chat.id, message.messageId)
+        telegram.deleteMessage(message.chat.id, message.messageId)
         log.debug("Deleted message")
     }
 
     private fun updateReplyKeyboard(message: Message, selected: ReplyOption) {
         log.info("Selecting button $selected for message ${message.messageId}")
         val replyMarkup = buildReplyKeyboard(selected)
-        bot.editMessageReplyMarkup(
+        telegram.editMessageReplyMarkup(
             message.chat.id, message.messageId,
             replyMarkup = replyMarkup)
         log.debug("Updated message reply keyboard")

@@ -1,7 +1,5 @@
 package ch.homegate.crawler
 
-import ch.homegate.FirestoreListingsRecorder
-import ch.homegate.airtable.AirtableBackend
 import ch.homegate.setupJavaLogging
 import com.google.cloud.functions.BackgroundFunction
 import com.google.cloud.functions.Context
@@ -12,23 +10,22 @@ import org.slf4j.LoggerFactory
 @KtorExperimentalAPI
 class Function : BackgroundFunction<PubSubMessage> {
 
-    private val log = LoggerFactory.getLogger(javaClass)
-
-    private val homegate = HomegateClient()
-    private val listingsRecorder = FirestoreListingsRecorder()
-    private val airtableBackend = AirtableBackend(
-        System.getenv("AIRTABLE_API_KEY"),
-        System.getenv("AIRTABLE_APP_ID"))
-    private val notifier = HomegateNotifier(homegate, listingsRecorder, airtableBackend)
+    private val conf = GcfConfiguration()
+    private val crawler = conf.crawler
 
     init {
         setupJavaLogging()
     }
 
     override fun accept(payload: PubSubMessage, context: Context): Unit = runBlocking {
-        log.info("Running bot as GCF")
-        notifier.notify(listingsRequest)
-        log.info("Finished")
+        crawler.execute(listingsRequest)
     }
 
 }
+
+data class PubSubMessage(
+    val data: String? = null,
+    val attributes: Map<String, String>? = null,
+    val messageId: String? = null,
+    val publishTime: String? = null,
+)

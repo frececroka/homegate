@@ -1,6 +1,6 @@
 package ch.homegate.airtable
 
-import ch.homegate.crawler.ListingResponse
+import ch.homegate.client.ListingResponse
 import io.ktor.util.*
 
 @KtorExperimentalAPI

@@ -1,19 +1,19 @@
-package ch.homegate.crawler
+package ch.homegate.client
 
 data class ListingsRequest(
-        val from: Int = 0,
-        val size: Int = 20,
-        val query: ListingsQuery,
-        val sortBy: String = "dateCreated",
-        val sortDirection: String = "desc",
-        val resultTemplate: ListingTemplate = ListingTemplate(),
+    val from: Int = 0,
+    val size: Int = 20,
+    val query: ListingsQuery,
+    val sortBy: String = "dateCreated",
+    val sortDirection: String = "desc",
+    val resultTemplate: ListingTemplate = ListingTemplate(),
 )
 
 data class ListingsQuery(
-        val location: Location,
-        val monthlyRent: IntRange,
-        val numberOfRooms: IntRange,
-        val offerType: String,
+    val location: Location,
+    val monthlyRent: IntRange,
+    val numberOfRooms: IntRange,
+    val offerType: String,
 )
 
 data class Location(
@@ -26,17 +26,17 @@ data class IntRange(
 )
 
 data class ListingTemplate(
-        val id: Boolean = true,
-        val listing: ListingDetailsTemplate = ListingDetailsTemplate(),
+    val id: Boolean = true,
+    val listing: ListingDetailsTemplate = ListingDetailsTemplate(),
 )
 
 data class ListingDetailsTemplate(
-        val address: AddressTemplate = AddressTemplate(),
-        val categories: Boolean = true,
-        val characteristics: Boolean = true,
-        val localization: LocalizationTemplate = LocalizationTemplate(),
-        val offerType: Boolean = true,
-        val prices: Boolean = true,
+    val address: AddressTemplate = AddressTemplate(),
+    val categories: Boolean = true,
+    val characteristics: Boolean = true,
+    val localization: LocalizationTemplate = LocalizationTemplate(),
+    val offerType: Boolean = true,
+    val prices: Boolean = true,
 )
 
 data class AddressTemplate(
@@ -54,14 +54,14 @@ data class AddressTemplate(
 )
 
 data class LocalizationTemplate(
-        val de: SingleLocalizationTemplate = SingleLocalizationTemplate(),
-        val primary: Boolean = true,
+    val de: SingleLocalizationTemplate = SingleLocalizationTemplate(),
+    val primary: Boolean = true,
 )
 
 data class SingleLocalizationTemplate(
-        val text: Boolean = true,
-        val urls: Boolean = true,
-        val attachments: AttachmentsTemplate = AttachmentsTemplate(),
+    val text: Boolean = true,
+    val urls: Boolean = true,
+    val attachments: AttachmentsTemplate = AttachmentsTemplate(),
 )
 
 data class AttachmentsTemplate(
@@ -70,24 +70,24 @@ data class AttachmentsTemplate(
 )
 
 data class ListingsResponse(
-        val from: Int,
-        val size: Int,
-        val total: Int,
-        val results: List<ListingResponse>,
+    val from: Int,
+    val size: Int,
+    val total: Int,
+    val results: List<ListingResponse>,
 )
 
 data class ListingResponse(
-        val id: String,
-        val listing: Listing,
+    val id: String,
+    val listing: Listing,
 ) {
     val url: String get() = "https://www.homegate.ch/rent/$id"
 }
 
 data class Listing(
-        val address: Address,
-        val characteristics: Characteristics,
-        val localization: Localizations,
-        val prices: Prices,
+    val address: Address,
+    val characteristics: Characteristics,
+    val localization: Localizations,
+    val prices: Prices,
 )
 
 data class Address(
@@ -120,13 +120,13 @@ data class Characteristics(
 }
 
 data class Localizations(
-        val de: Localization,
-        val primary: String,
+    val de: Localization,
+    val primary: String,
 )
 
 data class Localization(
-        val attachments: List<Attachment>,
-        val text: LocalizationText,
+    val attachments: List<Attachment>,
+    val text: LocalizationText,
 )
 
 data class Attachment(
@@ -140,16 +140,9 @@ data class LocalizationText(
 )
 
 data class Prices(
-        val rent: Price,
+    val rent: Price,
 )
 
 data class Price(
         val gross: Int,
-)
-
-data class PubSubMessage(
-        val data: String? = null,
-        val attributes: Map<String, String>? = null,
-        val messageId: String? = null,
-        val publishTime: String? = null,
 )

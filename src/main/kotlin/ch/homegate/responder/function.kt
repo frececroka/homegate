@@ -1,7 +1,5 @@
 package ch.homegate.responder
 
-import ch.homegate.airtable.AirtableBackend
-import ch.homegate.FirestoreListingsRecorder
 import ch.homegate.setupJavaLogging
 import com.github.kotlintelegrambot.entities.Update
 import com.google.cloud.functions.HttpFunction
@@ -15,11 +13,8 @@ import kotlinx.coroutines.runBlocking
 @Suppress("unused")
 class Function : HttpFunction {
 
-    private val listingsRecorder = FirestoreListingsRecorder()
-    private val airtableBackend = AirtableBackend(
-        System.getenv("AIRTABLE_API_KEY"),
-        System.getenv("AIRTABLE_APP_ID"))
-    private val responder = QueryResponder(listingsRecorder, airtableBackend)
+    private val config = GcfConfiguration()
+    private val responder = config.responder
 
     private val gson = Gson()
 

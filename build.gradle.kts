@@ -28,6 +28,7 @@ dependencies {
     implementation("io.ktor:ktor-client-gson:1.4.1")
 
     implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:5.0.0")
+    implementation("com.google.guava:guava:30.0-jre")
 
     implementation("org.slf4j:slf4j-api:1.7.30")
     implementation("ch.qos.logback:logback-classic:1.2.3")

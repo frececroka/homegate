@@ -5,6 +5,9 @@ import com.google.cloud.firestore.FirestoreOptions
 import java.io.FileNotFoundException
 import java.nio.file.Paths
 
+/**
+ * Implementations keep track of the listings for which Telegram messages have already been sent.
+ */
 interface ListingsRecorder {
     fun add(id: String, messageId: Long)
     fun getMessageId(id: String): Long?
@@ -43,7 +46,7 @@ class LocalListingsRecorder : ListingsRecorder {
 }
 
 @Suppress("unused")
-class FirestoreListingsRecorder : ListingsRecorder {
+class FirestoreListingsRecorder(private val collectionName: String) : ListingsRecorder {
 
     data class Entry(
         val messageId: Long = 0,
@@ -54,7 +57,6 @@ class FirestoreListingsRecorder : ListingsRecorder {
             .setCredentials(GoogleCredentials.getApplicationDefault())
             .build()
     private val db = firestoreOptions.service
-    private val collectionName = System.getenv("FIRESTORE_COLLECTION")
     private val collection = db.collection(collectionName)
 
     override fun add(id: String, messageId: Long) {

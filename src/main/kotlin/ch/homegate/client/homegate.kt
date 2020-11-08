@@ -1,4 +1,4 @@
-package ch.homegate.crawler
+package ch.homegate.client
 
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
