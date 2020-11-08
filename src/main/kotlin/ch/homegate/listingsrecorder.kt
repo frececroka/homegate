@@ -1,6 +1,7 @@
 package ch.homegate
 
 import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.firestore.CollectionReference
 import com.google.cloud.firestore.FirestoreOptions
 import java.io.FileNotFoundException
 import java.nio.file.Paths
@@ -46,18 +47,12 @@ class LocalListingsRecorder : ListingsRecorder {
 }
 
 @Suppress("unused")
-class FirestoreListingsRecorder(private val collectionName: String) : ListingsRecorder {
+class FirestoreListingsRecorder(private val collection: CollectionReference) : ListingsRecorder {
 
     data class Entry(
         val messageId: Long = 0,
         val created: Long = System.currentTimeMillis()
     )
-
-    private val firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
-            .setCredentials(GoogleCredentials.getApplicationDefault())
-            .build()
-    private val db = firestoreOptions.service
-    private val collection = db.collection(collectionName)
 
     override fun add(id: String, messageId: Long) {
         val entry = Entry(messageId)

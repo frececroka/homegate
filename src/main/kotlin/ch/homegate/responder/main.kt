@@ -1,5 +1,6 @@
 package ch.homegate.responder
 
+import ch.homegate.Configuration
 import ch.homegate.setupJavaLogging
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory
 private val log = LoggerFactory.getLogger("ch.homegate.query")
 
 @KtorExperimentalAPI
-private val config = LocalConfiguration()
+private val config = Configuration.local()
 
 @KtorExperimentalAPI
 private val responder = config.responder

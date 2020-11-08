@@ -1,5 +1,6 @@
 package ch.homegate.responder
 
+import ch.homegate.Configuration
 import ch.homegate.setupJavaLogging
 import com.github.kotlintelegrambot.entities.Update
 import com.google.cloud.functions.HttpFunction
@@ -13,7 +14,7 @@ import kotlinx.coroutines.runBlocking
 @Suppress("unused")
 class Function : HttpFunction {
 
-    private val config = GcfConfiguration()
+    private val config = Configuration.gcf()
     private val responder = config.responder
 
     private val gson = Gson()
