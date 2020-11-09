@@ -2,6 +2,7 @@ package ch.homegate.airtable
 
 import ch.homegate.client.ListingResponse
 import io.ktor.util.*
+import java.net.URI
 
 @KtorExperimentalAPI
 class AirtableBackend(apiKey: String, appId: String) {
@@ -10,16 +11,21 @@ class AirtableBackend(apiKey: String, appId: String) {
     private val table = AirtableListingsTable(airtable)
 
     suspend fun add(result: ListingResponse) {
-        val listing = result.listing
-        val airtableListing = AirtableListing(
-            address = listing.address.toString(),
-            zip = listing.address.postalCode,
-            gross_rent =  listing.prices.rent.gross,
-            floor_space = listing.characteristics.space(),
-            state = "Initial",
-            url = result.url,
-        )
+        val airtableListing = mapListing(result)
         table.create(listOf(NewRecord(airtableListing)))
+    }
+
+    private fun mapListing(result: ListingResponse): AirtableListing {
+        val listing = result.listing
+        val address = listing.address.toString()
+        val zip = listing.address.postalCode
+        val grossRent = listing.prices.rent.gross
+        val floorSpace = listing.characteristics.space()
+        val state = "Initial"
+        val url = result.url
+        val attachments = listing.localization.de.attachments
+            .map { AirtableAttachment(URI(it.url)) }
+        return AirtableListing(address, zip, grossRent, floorSpace, state, url, attachments)
     }
 
     suspend fun delete(id: String) {

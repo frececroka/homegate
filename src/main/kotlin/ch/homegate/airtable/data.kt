@@ -1,5 +1,7 @@
 package ch.homegate.airtable
 
+import java.net.URI
+
 data class Record<T>(val id: String, val fields: T)
 data class NewRecord<T>(val fields: T)
 
@@ -18,6 +20,11 @@ data class AirtableListing(
     val floor_space: Int?,
     val state: String,
     val url: String,
+    val attachments: List<AirtableAttachment>
+)
+
+data class AirtableAttachment(
+    val url: URI,
 )
 
 data class AirtableListingPatch(
