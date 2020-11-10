@@ -1,5 +1,9 @@
 resource "google_pubsub_topic" "crawler" {
   name = "${var.name}.crawler"
+
+  labels = {
+    environment = var.name
+  }
 }
 
 resource "google_cloud_scheduler_job" "crawler" {
@@ -14,6 +18,10 @@ resource "google_cloud_scheduler_job" "crawler" {
 
 resource "google_storage_bucket" "functions" {
   name = "${var.name}-functions-homegate-294112"
+
+  labels = {
+    environment = var.name
+  }
 }
 
 data "archive_file" "source" {
@@ -51,6 +59,10 @@ resource "google_cloudfunctions_function" "crawler" {
     event_type = "google.pubsub.topic.publish"
     resource = google_pubsub_topic.crawler.id
   }
+
+  labels = {
+    environment = var.name
+  }
 }
 
 resource "google_cloudfunctions_function" "responder" {
@@ -70,6 +82,10 @@ resource "google_cloudfunctions_function" "responder" {
   }
 
   trigger_http = true
+
+  labels = {
+    environment = var.name
+  }
 }
 
 resource "google_cloudfunctions_function_iam_member" "invoker" {
