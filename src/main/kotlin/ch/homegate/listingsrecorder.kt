@@ -1,10 +1,6 @@
 package ch.homegate
 
-import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.CollectionReference
-import com.google.cloud.firestore.FirestoreOptions
-import java.io.FileNotFoundException
-import java.nio.file.Paths
 
 /**
  * Implementations keep track of the listings for which Telegram messages have already been sent.
@@ -16,33 +12,22 @@ interface ListingsRecorder {
 }
 
 @Suppress("unused")
-class LocalListingsRecorder : ListingsRecorder {
+class LocalListingsRecorder(
+    private val db: JsonDb
+) : ListingsRecorder {
 
-    private val root = Paths.get("listings")
+    override fun add(id: String, messageId: Long) =
+        db.set(id, messageId)
 
-    init {
-        root.toFile().mkdir()
-    }
-
-    override fun add(id: String, messageId: Long) {
-        representative(id).writeText(messageId.toString())
-    }
-
-    override fun getMessageId(id: String): Long? {
-        return try {
-            representative(id).readText().toLong()
-        } catch (_: FileNotFoundException) {
-            null
-        }
-    }
+    override fun getMessageId(id: String): Long? =
+        db.get<Long>(id, Long::class.java)
 
     override fun getId(messageId: Long): String? {
-        val files = root.toFile().listFiles()!!
-        val file = files.firstOrNull { getMessageId(it.name) == messageId }
-        return file?.name
+        val record = db.find<Long>({ it == messageId }, Long::class.java)
+        return if (record != null) {
+            val (id, _) = record; id
+        } else null
     }
-
-    private fun representative(id: String) = root.resolve(id).toFile()
 
 }
 

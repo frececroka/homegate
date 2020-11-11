@@ -11,6 +11,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.FirestoreOptions
 import com.google.common.eventbus.EventBus
 import io.ktor.util.*
+import java.nio.file.Paths
 
 @KtorExperimentalAPI
 class Configuration(
@@ -50,7 +51,8 @@ class Configuration(
         }
 
         fun local(): Configuration {
-            val listingsRecorder = LocalListingsRecorder()
+            val db = JsonDb(Paths.get("data"))
+            val listingsRecorder = LocalListingsRecorder(db.child("listings"))
             return common(listingsRecorder)
         }
 
