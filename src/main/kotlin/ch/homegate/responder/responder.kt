@@ -36,19 +36,20 @@ class QueryResponder(
                     ReplyOption.Delete -> deleteMessage(message)
                     else -> updateReplyKeyboard(message, selected)
                 }
-                val id = listingsRecorder.getId(message.messageId)
-                if (id != null) {
+                val telegramId = Pair(message.chat.id, message.messageId)
+                val homegateId = listingsRecorder.getHomegateId(telegramId)
+                if (homegateId != null) {
                     when (selected) {
                         ReplyOption.Delete ->
-                            airtableBackend.delete(id)
+                            airtableBackend.delete(homegateId)
                         ReplyOption.Ignore ->
-                            airtableBackend.setState(id, State.Rejected)
+                            airtableBackend.setState(homegateId, State.Rejected)
                         ReplyOption.Contacted ->
-                            airtableBackend.setState(id, State.Contacted)
+                            airtableBackend.setState(homegateId, State.Contacted)
                         ReplyOption.Viewing ->
-                            airtableBackend.setState(id, State.Viewing)
+                            airtableBackend.setState(homegateId, State.Viewing)
                         ReplyOption.Applied ->
-                            airtableBackend.setState(id, State.Applied)
+                            airtableBackend.setState(homegateId, State.Applied)
                     }
                 } else {
                     log.warn("No listing identifier associated with message ${message.messageId}")

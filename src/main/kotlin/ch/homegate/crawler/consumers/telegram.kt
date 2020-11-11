@@ -36,7 +36,7 @@ class TelegramNotifier(
                 val createdMessage = createdMessageResponse.result
                 if (createdMessage != null) {
                     log.debug("Marking result ${result.id} as old")
-                    listingsRecorder.add(result.id, createdMessage.messageId)
+                    listingsRecorder.add(result.id, createdMessage.chat.id, createdMessage.messageId)
                 } else {
                     log.error("Telegram API did not return information about created message")
                 }

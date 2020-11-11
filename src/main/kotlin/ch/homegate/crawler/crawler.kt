@@ -26,12 +26,12 @@ class HomegateCrawler(
         val response = homegate.search(request)
         log.info("Received ${response.results.size} results")
         for (result in response.results) {
-            val messageId = listingsRecorder.getMessageId(result.id)
-            if (messageId == null) {
+            val telegramId = listingsRecorder.getTelegramId(result.id)
+            if (telegramId == null) {
                 log.info("Putting new listing ${result.id} on the event bus")
                 eventBus.post(result)
             } else {
-                log.debug("Listing ${result.id} has already been published as message $messageId")
+                log.debug("Listing ${result.id} has already been published as message $telegramId")
             }
         }
         log.info("Finished")
