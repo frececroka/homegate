@@ -10,6 +10,6 @@
         <appender-ref ref="STDOUT" />
     </root>
 
-    <logger name="ch.homegate.crawler" level="debug" />
+    <logger name="ch.homegate" level="debug" />
 
 </configuration>
