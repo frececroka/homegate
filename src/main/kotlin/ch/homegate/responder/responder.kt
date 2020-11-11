@@ -29,35 +29,39 @@ class QueryResponder(
 
         val callbackQuery = update.callbackQuery
         if (callbackQuery != null) {
-            val selected = ReplyOption.fromString(callbackQuery.data)
-            val message = callbackQuery.message
-            if (message != null) {
-                when (selected) {
-                    ReplyOption.Delete -> deleteMessage(message)
-                    else -> updateReplyKeyboard(message, selected)
-                }
-                val telegramId = Pair(message.chat.id, message.messageId)
-                val homegateId = listingsRecorder.getHomegateId(telegramId)
-                if (homegateId != null) {
-                    when (selected) {
-                        ReplyOption.Delete ->
-                            airtableBackend.delete(homegateId)
-                        ReplyOption.Ignore ->
-                            airtableBackend.setState(homegateId, State.Rejected)
-                        ReplyOption.Contacted ->
-                            airtableBackend.setState(homegateId, State.Contacted)
-                        ReplyOption.Viewing ->
-                            airtableBackend.setState(homegateId, State.Viewing)
-                        ReplyOption.Applied ->
-                            airtableBackend.setState(homegateId, State.Applied)
-                    }
-                } else {
-                    log.warn("No listing identifier associated with message ${message.messageId}")
-                }
-            }
-            telegram.answerCallbackQuery(callbackQuery.id)
-            log.debug("Acknowledged callback")
+            handleCallback(callbackQuery)
         }
+    }
+
+    private suspend fun handleCallback(callbackQuery: CallbackQuery) {
+        val selected = ReplyOption.fromString(callbackQuery.data)
+        val message = callbackQuery.message
+        if (message != null) {
+            when (selected) {
+                ReplyOption.Delete -> deleteMessage(message)
+                else -> updateReplyKeyboard(message, selected)
+            }
+            val telegramId = Pair(message.chat.id, message.messageId)
+            val homegateId = listingsRecorder.getHomegateId(telegramId)
+            if (homegateId != null) {
+                when (selected) {
+                    ReplyOption.Delete ->
+                        airtableBackend.delete(homegateId)
+                    ReplyOption.Ignore ->
+                        airtableBackend.setState(homegateId, State.Rejected)
+                    ReplyOption.Contacted ->
+                        airtableBackend.setState(homegateId, State.Contacted)
+                    ReplyOption.Viewing ->
+                        airtableBackend.setState(homegateId, State.Viewing)
+                    ReplyOption.Applied ->
+                        airtableBackend.setState(homegateId, State.Applied)
+                }
+            } else {
+                log.warn("No listing identifier associated with message ${message.messageId}")
+            }
+        }
+        telegram.answerCallbackQuery(callbackQuery.id)
+        log.debug("Acknowledged callback")
     }
 
     private fun deleteMessage(message: Message) {
