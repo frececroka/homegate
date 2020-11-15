@@ -33,6 +33,11 @@ class HomegateCrawler(
         log.info("Searching for listings for chat $chatId")
         log.debug("queryConstraints = $queryConstraints")
 
+        if (queryConstraints.areas.isEmpty()) {
+            log.info("Not searching for listings because no areas have been set")
+            return
+        }
+
         if (queryConstraints.maxPrice == null) {
             log.info("Not searching for listings because no max rent has been set")
             return

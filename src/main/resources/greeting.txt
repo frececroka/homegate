@@ -13,3 +13,5 @@ To define the areas where you want to search in, use the /add_area and /remove_a
 
 /add_area zurich - Searches for areas matching "zurich" and allows search results to be added to the list of included areas.
 /remove_area - Prompts for an area to be removed from the list of included areas.
+
+You will only receive search results when you add some areas, so make sure to run /add_area.
