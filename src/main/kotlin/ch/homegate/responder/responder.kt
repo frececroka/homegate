@@ -105,12 +105,6 @@ class QueryResponder(
         val chatId = message.chat.id
         constraintsRepository.update(chatId) {
             QueryConstraints(
-                areas = setOf(
-                    "geo-city-kilchberg-zh",
-                    "geo-city-kusnacht-zh",
-                    "geo-city-ruschlikon",
-                    "geo-city-zollikon",
-                    "geo-city-zurich"),
                 minRooms = 3,
                 minSpace = 80,
                 maxPrice = 3800,
