@@ -52,6 +52,9 @@ class HomegateCrawler(
                 numberOfRooms = IntRange(
                     from = queryConstraints.minRooms,
                     to = queryConstraints.maxRooms),
+                livingSpace = IntRange(
+                    from = queryConstraints.minSpace,
+                    to = queryConstraints.maxSpace),
                 offerType = "RENT"))
         log.debug("request = $request")
 

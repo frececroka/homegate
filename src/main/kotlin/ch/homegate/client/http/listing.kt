@@ -16,6 +16,7 @@ data class ListingsQuery(
     val location: Location,
     val monthlyRent: IntRange,
     val numberOfRooms: IntRange,
+    val livingSpace: IntRange,
     val offerType: String,
 )
 
