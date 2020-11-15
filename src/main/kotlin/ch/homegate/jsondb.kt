@@ -28,9 +28,9 @@ class JsonDb(private val root: Path) {
         representative(id).writer().use { gson.toJson(value, it) }
 
     fun <T> find(predicate: (T) -> Boolean, type: Type): Pair<String, T>? =
-        findAll(type, predicate).singleOrNull()
+        findAll(predicate, type).singleOrNull()
 
-    fun <T> findAll(type: Type, predicate: (T) -> Boolean): List<Pair<String, T>> =
+    fun <T> findAll(predicate: (T) -> Boolean, type: Type): List<Pair<String, T>> =
         root.toFile().listFiles()!!.toList()
             .map { Pair(it.name, fromFile<T>(it, type)) }
             .filter { (_, file) -> predicate(file) }

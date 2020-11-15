@@ -1,18 +1,16 @@
-resource "google_pubsub_topic" "crawler" {
-  name = "${var.name}.crawler"
+locals {
+  function_environment_variables = {
+    TELEGRAM_TOKEN = var.telegram_token
 
-  labels = {
-    environment = var.name
-  }
-}
+    FIRESTORE_LISTINGS_COLLECTION = "${var.name}.listings"
+    FIRESTORE_QUERY_CONSTRAINTS_COLLECTION = "${var.name}.query-constraints"
 
-resource "google_cloud_scheduler_job" "crawler" {
-  name = "crawler-${var.name}"
-  schedule = "0 */1 * * *"
+    AIRTABLE_API_KEY = var.airtable_api_key
+    AIRTABLE_APP_ID = var.airtable_app_id
 
-  pubsub_target {
-    topic_name = google_pubsub_topic.crawler.id
-    data = base64encode("crawl")
+    CRAWL_REQUEST_TOPIC = google_pubsub_topic.crawler.id
+
+    SPRING_PROFILES_ACTIVE = "gcf"
   }
 }
 
@@ -36,9 +34,29 @@ resource "google_storage_bucket_object" "source" {
   source = data.archive_file.source.output_path
 }
 
-resource "google_cloudfunctions_function" "crawler" {
-  name = "crawler-${var.name}"
-  entry_point = "ch.homegate.crawler.Function"
+
+resource "google_pubsub_topic" "initiator" {
+  name = "${var.name}.initiator"
+
+  labels = {
+    environment = var.name
+  }
+}
+
+resource "google_cloud_scheduler_job" "initiator" {
+  name = "initiator-${var.name}"
+  schedule = "0 */1 * * *"
+
+  pubsub_target {
+    topic_name = google_pubsub_topic.initiator.id
+    data = base64encode("initiate")
+  }
+}
+
+
+resource "google_cloudfunctions_function" "initiator" {
+  name = "initiator-${var.name}"
+  entry_point = "ch.homegate.initiator.Function"
   runtime = "java11"
 
   source_archive_bucket = google_storage_bucket.functions.name
@@ -47,13 +65,38 @@ resource "google_cloudfunctions_function" "crawler" {
   max_instances = 1
   timeout = 540
 
-  environment_variables = {
-    TELEGRAM_TOKEN = var.telegram_token
-    CHAT_ID = var.chat_id
-    FIRESTORE_COLLECTION = "${var.name}.listings"
-    AIRTABLE_API_KEY = var.airtable_api_key
-    AIRTABLE_APP_ID = var.airtable_app_id
+  environment_variables = local.function_environment_variables
+
+  event_trigger {
+    event_type = "google.pubsub.topic.publish"
+    resource = google_pubsub_topic.initiator.id
   }
+
+  labels = {
+    environment = var.name
+  }
+}
+
+
+resource "google_pubsub_topic" "crawler" {
+  name = "${var.name}.crawler"
+
+  labels = {
+    environment = var.name
+  }
+}
+
+resource "google_cloudfunctions_function" "crawler" {
+  name = "crawler-${var.name}"
+  entry_point = "ch.homegate.crawler.Function"
+  runtime = "java11"
+
+  source_archive_bucket = google_storage_bucket.functions.name
+  source_archive_object = google_storage_bucket_object.source.name
+
+  timeout = 540
+
+  environment_variables = local.function_environment_variables
 
   event_trigger {
     event_type = "google.pubsub.topic.publish"
@@ -65,6 +108,7 @@ resource "google_cloudfunctions_function" "crawler" {
   }
 }
 
+
 resource "google_cloudfunctions_function" "responder" {
   name = "responder-${var.name}"
   entry_point = "ch.homegate.responder.Function"
@@ -73,13 +117,7 @@ resource "google_cloudfunctions_function" "responder" {
   source_archive_bucket = google_storage_bucket.functions.name
   source_archive_object = google_storage_bucket_object.source.name
 
-  environment_variables = {
-    TELEGRAM_TOKEN = var.telegram_token
-    CHAT_ID = var.chat_id
-    FIRESTORE_COLLECTION = "${var.name}.listings"
-    AIRTABLE_API_KEY = var.airtable_api_key
-    AIRTABLE_APP_ID = var.airtable_app_id
-  }
+  environment_variables = local.function_environment_variables
 
   trigger_http = true
 

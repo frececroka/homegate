@@ -1,76 +1,127 @@
 package ch.homegate
 
 import ch.homegate.airtable.AirtableBackend
-import ch.homegate.client.HomegateClient
-import ch.homegate.crawler.HomegateCrawler
 import ch.homegate.crawler.consumers.AirtableRecorder
 import ch.homegate.crawler.consumers.TelegramNotifier
-import ch.homegate.responder.QueryResponder
 import com.github.kotlintelegrambot.bot
 import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.firestore.CollectionReference
+import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.FirestoreOptions
 import com.google.common.eventbus.EventBus
+import com.google.pubsub.v1.TopicName
 import io.ktor.util.*
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.annotation.*
+import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.context.event.EventListener
+import org.springframework.stereotype.Component
 import java.nio.file.Paths
 
-@KtorExperimentalAPI
-class Configuration(
-    val crawler: HomegateCrawler,
-    val responder: QueryResponder,
-) {
+@Configuration
+open class CommonConfiguration {
 
-    @KtorExperimentalAPI
+    @Bean(name = ["new-listing-events"])
     @Suppress("UnstableApiUsage")
-    companion object {
+    open fun newListingBus() = EventBus()
 
-        fun common(listingsRecorder: ListingsRecorder): Configuration {
-            val eventBus = EventBus()
+    @Bean(name = ["crawl-request-events"])
+    @Suppress("UnstableApiUsage")
+    open fun crawlRequestBus() = EventBus()
 
-            val telegram = bot {
-                token = System.getenv("TELEGRAM_TOKEN")
-            }
 
-            val chatId = System.getenv("CHAT_ID").toLong()
+    @Bean
+    open fun telegramBot() = bot {
+        token = System.getenv("TELEGRAM_TOKEN")
+    }
 
-            val telegramNotifier = TelegramNotifier(telegram, chatId, listingsRecorder)
-            eventBus.register(telegramNotifier)
+    @Bean
+    @KtorExperimentalAPI
+    open fun airtableBackend() = AirtableBackend(
+        System.getenv("AIRTABLE_API_KEY"),
+        System.getenv("AIRTABLE_APP_ID"))
 
-            val airtableBackend = AirtableBackend(
-                System.getenv("AIRTABLE_API_KEY"),
-                System.getenv("AIRTABLE_APP_ID"))
+}
 
-            val airtableRecorder = AirtableRecorder(airtableBackend)
-            eventBus.register(airtableRecorder)
+@Configuration
+@Profile("local")
+open class LocalConfiguration {
 
-            val homegate = HomegateClient()
-            val crawler = HomegateCrawler(homegate, listingsRecorder, eventBus)
+    @Bean
+    @Primary
+    open fun jsonDb() = JsonDb(Paths.get("data"))
 
-            val responder = QueryResponder(telegram, listingsRecorder, airtableBackend)
+    @Bean(name = ["listings-db"])
+    open fun listingsDb(db: JsonDb) = db.child("listings")
 
-            return Configuration(crawler, responder)
-        }
+    @Bean(name = ["query-constraints-db"])
+    open fun queryConstraintsDb(db: JsonDb) = db.child("constraints")
 
-        fun local(): Configuration {
-            val db = JsonDb(Paths.get("data"))
-            val listingsRecorder = LocalListingsRecorder(db.child("listings"))
-            return common(listingsRecorder)
-        }
+}
 
-        fun gcf(): Configuration {
-            val firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
-                .setCredentials(GoogleCredentials.getApplicationDefault())
-                .build()
+@Configuration
+@Profile("gcf")
+open class GcfConfiguration {
 
-            val db = firestoreOptions.service!!
+    @Bean
+    open fun firestore(): Firestore {
+        val firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
+            .setCredentials(GoogleCredentials.getApplicationDefault())
+            .build()
+        return firestoreOptions.service!!
+    }
 
-            val collectionName = System.getenv("FIRESTORE_COLLECTION")!!
-            val collection = db.collection(collectionName)
+    @Bean(name = ["listings-db"])
+    open fun listingsDb(db: Firestore): CollectionReference {
+        val listingsCollectionName = System.getenv("FIRESTORE_LISTINGS_COLLECTION")!!
+        return db.collection(listingsCollectionName)
+    }
 
-            val listingsRecorder = FirestoreListingsRecorder(collection)
+    @Bean(name = ["query-constraints-db"])
+    open fun queryConstraintsDb(db: Firestore): CollectionReference {
+        val listingsCollectionName = System.getenv("FIRESTORE_QUERY_CONSTRAINTS_COLLECTION")!!
+        return db.collection(listingsCollectionName)
+    }
 
-            return common(listingsRecorder)
-        }
-
+    @Bean(name = ["crawl-request-topic"])
+    open fun crawlRequestTopic(): TopicName {
+        return TopicName.parse(System.getenv("CRAWL_REQUEST_TOPIC"))
     }
 
 }
+
+@Component
+@Profile("local", "gcf")
+@KtorExperimentalAPI
+@Suppress("UnstableApiUsage")
+class ConfigureNewListingBusSubscribers(
+    @Qualifier("new-listing-events") val newListingBus: EventBus,
+    val telegramNotifier: TelegramNotifier,
+    val airtableRecorder: AirtableRecorder,
+) {
+
+    @EventListener
+    fun onContextRefreshed(event: ContextRefreshedEvent) {
+        newListingBus.register(telegramNotifier)
+        newListingBus.register(airtableRecorder)
+    }
+
+}
+
+@Component
+@Profile("local", "gcf")
+@KtorExperimentalAPI
+@Suppress("UnstableApiUsage")
+class ConfigureCrawlRequestBusSubscribers(
+    @Qualifier("crawl-request-events") val crawlRequestBus: EventBus,
+    @Qualifier("crawl-request-sink") val crawlRequestSink: Any,
+) {
+
+    @EventListener
+    fun onContextRefreshed(event: ContextRefreshedEvent) {
+        crawlRequestBus.register(crawlRequestSink)
+    }
+
+}
+
+fun context() = AnnotationConfigApplicationContext("ch.homegate")

@@ -1,0 +1,15 @@
+Hey there!
+
+This bot informs you of new listings on the Homegate platform at the start of every hour. To start, configure your search parameters. You can do this with six commands:
+
+/min_price 1500 - Sets the minimum price to 1500 CHF.
+/max_price 3800 - Sets the maximum price to 2800 CHF.
+/min_rooms 3 - Sets the minimum number of rooms to 3.
+/max_rooms 5 - Sets the maximum number of rooms to 5.
+/min_space 95 - Sets the minimum floor space to 95 square meters.
+/max_space 150 - Sets the maximum floor space to 150 square meters.
+
+To define the areas where you want to search in, use the /add_area and /remove_area commands like this:
+
+/add_area zurich - Searches for areas matching "zurich" and allows search results to be added to the list of included areas.
+/remove_area - Prompts for an area to be removed from the list of included areas.

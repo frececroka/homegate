@@ -2,30 +2,34 @@ package ch.homegate.crawler.consumers
 
 import ch.homegate.ListingsRecorder
 import ch.homegate.buildReplyKeyboard
-import ch.homegate.client.Address
-import ch.homegate.client.ListingResponse
+import ch.homegate.client.data.Address
+import ch.homegate.client.http.ListingResponse
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.ParseMode
 import com.google.common.eventbus.Subscribe
 import org.apache.http.client.utils.URIBuilder
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Component
 import java.net.URI
 
 /**
  * Receives listings from an event bus and sends a Telegram message for each.
  */
+@Component
+@Profile("local", "gcf")
 @Suppress("UnstableApiUsage", "unused")
 class TelegramNotifier(
     private val telegram: Bot,
-    private val chatId: Long,
     private val listingsRecorder: ListingsRecorder,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
     @Subscribe
-    fun sendMessageForListing(result: ListingResponse) {
-        log.info("Sending message for listing ${result.id}")
+    fun sendMessageForListing(message: Pair<Long, ListingResponse>) {
+        val (chatId, result) = message
+        log.info("Sending message for listing ${result.id} to chat $chatId")
         val replyMarkup = buildReplyKeyboard()
         val (botResponse, exception) = telegram.sendMessage(chatId, buildMessage(result),
             parseMode = ParseMode.MARKDOWN,

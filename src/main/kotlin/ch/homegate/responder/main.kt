@@ -1,23 +1,25 @@
 package ch.homegate.responder
 
-import ch.homegate.Configuration
+import ch.homegate.context
 import ch.homegate.setupJavaLogging
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.handlers.Handler
 import com.github.kotlintelegrambot.entities.Update
 import io.ktor.util.*
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("ch.homegate.query")
 
-@KtorExperimentalAPI
-private val config = Configuration.local()
+private val ctx = context()
 
+@FlowPreview
 @KtorExperimentalAPI
-private val responder = config.responder
+private val responder = ctx.getBean(QueryResponder::class.java)
 
+@FlowPreview
 @KtorExperimentalAPI
 fun main() {
     setupJavaLogging()

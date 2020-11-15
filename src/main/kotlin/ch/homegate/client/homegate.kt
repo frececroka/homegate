@@ -1,5 +1,9 @@
 package ch.homegate.client
 
+import ch.homegate.client.data.CollectionResponse
+import ch.homegate.client.data.LocationLookup
+import ch.homegate.client.http.ListingResponse
+import ch.homegate.client.http.ListingsRequest
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
@@ -7,7 +11,10 @@ import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.util.*
+import kotlinx.coroutines.runBlocking
+import org.springframework.stereotype.Component
 
+@Component
 @KtorExperimentalAPI
 class HomegateClient {
 
@@ -30,9 +37,12 @@ class HomegateClient {
         }
     } }
 
-    suspend fun search(request: ListingsRequest): ListingsResponse =
+    suspend fun search(request: ListingsRequest): CollectionResponse<ListingResponse> =
         httpClient.post("https://api.homegate.ch/search/listings") {
             body = request
         }
+
+    suspend fun lookupLocation(zip: String): CollectionResponse<LocationLookup> =
+        httpClient.get("https://api.homegate.ch/geo/locations?lang=en&name=$zip&size=24")
 
 }

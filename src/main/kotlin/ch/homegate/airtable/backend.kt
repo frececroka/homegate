@@ -1,6 +1,6 @@
 package ch.homegate.airtable
 
-import ch.homegate.client.ListingResponse
+import ch.homegate.client.http.ListingResponse
 import io.ktor.util.*
 import java.net.URI
 
