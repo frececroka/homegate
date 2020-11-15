@@ -112,7 +112,6 @@ class QueryResponder(
         }
         val greeting = javaClass.getResourceAsStream("/greeting.txt").bufferedReader().readText()
         telegram.sendMessage(chatId, greeting)
-        telegram.sendMessage(chatId, "Your current search parameters are as follows:")
         reportConfig(chatId)
     }
 
@@ -225,8 +224,10 @@ class QueryResponder(
         val propertyLines = properties
             .filter { (_, v) -> v != null }
             .map { (k, v) -> k to v.toString() }
-        val text = (areasLines + propertyLines).joinToString("\n") { (k, v) -> "$k = $v" }
-        telegram.sendMessage(chatId, text)
+        val stringifiedConfig = (areasLines + propertyLines)
+            .joinToString("\n") { (k, v) -> "$k = $v" }
+        telegram.sendMessage(chatId, "Your current search parameters are as follows:")
+        telegram.sendMessage(chatId, stringifiedConfig)
     }
 
     private fun handleCommand(command: String, handler: (Message, List<String>) -> Unit): CommandHandler {
