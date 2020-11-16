@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.*
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.nio.file.Paths
 
@@ -37,9 +38,9 @@ open class CommonConfiguration {
 
     @Bean
     @KtorExperimentalAPI
-    open fun airtableBackend() = AirtableBackend(
-        System.getenv("AIRTABLE_API_KEY"),
-        System.getenv("AIRTABLE_APP_ID"))
+    open fun airtableBackend(env: Environment) = AirtableBackend(
+        env.getRequiredProperty("AIRTABLE_API_KEY"),
+        env.getRequiredProperty("AIRTABLE_APP_ID"))
 
 }
 
