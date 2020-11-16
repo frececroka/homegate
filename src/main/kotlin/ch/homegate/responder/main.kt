@@ -11,34 +11,42 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 
-private val log = LoggerFactory.getLogger("ch.homegate.responder")
-
-private val ctx = context()
-
 @FlowPreview
 @KtorExperimentalAPI
-private val responder = ctx.getBean(QueryResponder::class.java)
+open class LocalResponder(
+    private val responder: QueryResponder
+) {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
+    fun run() {
+        setupJavaLogging()
+        log.info("Running query responder locally")
+        log.info("If you don't receive any messages, make sure the webhook is not set for the bot")
+
+        val bot = bot {
+            token = System.getenv("TELEGRAM_TOKEN")
+            dispatch {
+                addHandler(object : Handler({ _, update ->
+                    runBlocking { responder.respond(update) }
+                }) {
+                    override val groupIdentifier: String
+                        get() = "generic"
+                    override fun checkUpdate(update: Update) = true
+                })
+            }
+        }
+
+        bot.startPolling()
+        Thread.sleep(Long.MAX_VALUE)
+    }
+
+}
 
 @FlowPreview
 @KtorExperimentalAPI
 fun main() {
-    setupJavaLogging()
-    log.info("Running query responder locally")
-    log.info("If you don't receive any messages, make sure the webhook is not set for the bot")
-
-    val bot = bot {
-        token = System.getenv("TELEGRAM_TOKEN")
-        dispatch {
-            addHandler(object : Handler({ _, update ->
-                runBlocking { responder.respond(update) }
-            }) {
-                override val groupIdentifier: String
-                    get() = "generic"
-                override fun checkUpdate(update: Update) = true
-            })
-        }
-    }
-
-    bot.startPolling()
-    Thread.sleep(Long.MAX_VALUE)
+    val ctx = context()
+    val localResponder = ctx.getBean(LocalResponder::class.java)
+    localResponder.run()
 }
