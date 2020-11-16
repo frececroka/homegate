@@ -12,12 +12,22 @@ import com.google.common.eventbus.EventBus
 import com.google.pubsub.v1.TopicName
 import io.ktor.util.*
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.*
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
-import org.springframework.core.env.Environment
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer
 import org.springframework.stereotype.Component
 import java.nio.file.Paths
+
+@Configuration
+@PropertySource("classpath:application.properties")
+open class AppProperties {
+    companion object {
+        @Bean
+        fun propertyResolver() = PropertySourcesPlaceholderConfigurer()
+    }
+}
 
 @Configuration
 open class CommonConfiguration {
@@ -32,15 +42,18 @@ open class CommonConfiguration {
 
 
     @Bean
-    open fun telegramBot() = bot {
-        token = System.getenv("TELEGRAM_TOKEN")
+    open fun telegramBot(
+        @Value("\${telegram.token}") token: String
+    ) = bot {
+        this.token = token
     }
 
     @Bean
     @KtorExperimentalAPI
-    open fun airtableBackend(env: Environment) = AirtableBackend(
-        env.getRequiredProperty("AIRTABLE_API_KEY"),
-        env.getRequiredProperty("AIRTABLE_APP_ID"))
+    open fun airtableBackend(
+        @Value("\${airtable.api_key}") apiKey: String,
+        @Value("\${airtable.app_id}") appId: String,
+    ) = AirtableBackend(apiKey, appId)
 
 }
 
@@ -73,20 +86,29 @@ open class GcfConfiguration {
     }
 
     @Bean(name = ["listings-db"])
-    open fun listingsDb(db: Firestore): CollectionReference {
-        val listingsCollectionName = System.getenv("FIRESTORE_LISTINGS_COLLECTION")!!
+    open fun listingsDb(
+        db: Firestore,
+        @Value("\${firestore.listings}")
+        listingsCollectionName: String,
+    ): CollectionReference {
         return db.collection(listingsCollectionName)
     }
 
     @Bean(name = ["query-constraints-db"])
-    open fun queryConstraintsDb(db: Firestore): CollectionReference {
-        val listingsCollectionName = System.getenv("FIRESTORE_QUERY_CONSTRAINTS_COLLECTION")!!
-        return db.collection(listingsCollectionName)
+    open fun queryConstraintsDb(
+        db: Firestore,
+        @Value("\${firestore.query_constraints}")
+        queryConstraintsCollectionName: String,
+    ): CollectionReference {
+        return db.collection(queryConstraintsCollectionName)
     }
 
     @Bean(name = ["crawl-request-topic"])
-    open fun crawlRequestTopic(): TopicName {
-        return TopicName.parse(System.getenv("CRAWL_REQUEST_TOPIC"))
+    open fun crawlRequestTopic(
+        @Value("\${pubsub.crawl}")
+        crawlRequestTopic: String
+    ): TopicName {
+        return TopicName.parse(crawlRequestTopic)
     }
 
 }
