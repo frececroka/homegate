@@ -58,3 +58,14 @@ tasks.register<JavaExec>("runResponder") {
 tasks.shadowJar {
     mergeServiceFiles()
 }
+
+tasks.register("commit") {
+    doLast {
+        exec { commandLine("git", "add", ".") }
+        exec { commandLine("git", "commit", "-m", "compile") }
+    }
+}
+
+for (t in listOf("build", "shadowJar", "runCrawler", "runResponder")) {
+    tasks[t].finalizedBy(tasks["commit"])
+}
