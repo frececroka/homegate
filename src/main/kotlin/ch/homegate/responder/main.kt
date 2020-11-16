@@ -11,7 +11,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 
-private val log = LoggerFactory.getLogger("ch.homegate.query")
+private val log = LoggerFactory.getLogger("ch.homegate.responder")
 
 private val ctx = context()
 
