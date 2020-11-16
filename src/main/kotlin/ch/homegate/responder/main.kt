@@ -10,7 +10,9 @@ import io.ktor.util.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 
+@Component
 @FlowPreview
 @KtorExperimentalAPI
 open class LocalResponder(
