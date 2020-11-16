@@ -25,7 +25,6 @@ open class LocalResponder(
     private val log = LoggerFactory.getLogger(javaClass)
 
     fun run() {
-        setupJavaLogging()
         log.info("Running query responder locally")
         log.info("If you don't receive any messages, make sure the webhook is not set for the bot")
 
@@ -51,7 +50,7 @@ open class LocalResponder(
 @FlowPreview
 @KtorExperimentalAPI
 fun main() {
-    val ctx = context()
+    val ctx = context(); setupJavaLogging()
     val localResponder = ctx.getBean(LocalResponder::class.java)
     localResponder.run()
 }
