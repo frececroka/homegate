@@ -62,7 +62,13 @@ tasks.shadowJar {
 tasks.register("commit") {
     doLast {
         exec { commandLine("git", "add", ".") }
-        exec { commandLine("git", "commit", "-m", "compile") }
+        val diffResult = exec {
+            commandLine("git", "diff-index", "--quiet", "HEAD")
+            isIgnoreExitValue = true
+        }
+        if (diffResult.exitValue != 0) {
+            exec { commandLine("git", "commit", "-m", "compile") }
+        }
     }
 }
 
