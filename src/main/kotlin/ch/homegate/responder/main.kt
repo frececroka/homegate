@@ -10,13 +10,16 @@ import io.ktor.util.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
 @FlowPreview
 @KtorExperimentalAPI
 open class LocalResponder(
-    private val responder: QueryResponder
+    private val responder: QueryResponder,
+    @Value("\${telegram.token}")
+    private val telegramToken: String
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -27,7 +30,7 @@ open class LocalResponder(
         log.info("If you don't receive any messages, make sure the webhook is not set for the bot")
 
         val bot = bot {
-            token = System.getenv("TELEGRAM_TOKEN")
+            token = telegramToken
             dispatch {
                 addHandler(object : Handler({ _, update ->
                     runBlocking { responder.respond(update) }
