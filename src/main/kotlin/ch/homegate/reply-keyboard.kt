@@ -11,11 +11,6 @@ sealed class ReplyOption {
     object Viewing : ReplyOption()
     object Applied : ReplyOption()
 
-    companion object {
-        fun fromString(s: String) =
-            invertToString(Delete, Ignore, Contacted, Viewing, Applied)(s)
-    }
-
     override fun toString(): String = when (this) {
         Delete -> "delete"
         Ignore -> "ignore"
