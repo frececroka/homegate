@@ -98,9 +98,9 @@ open class GcfConfiguration {
     open fun profileDb(
         db: Firestore,
         @Value("\${firestore.profiles}")
-        queryConstraintsCollectionName: String,
+        profilesCollectionName: String,
     ): CollectionReference {
-        return db.collection(queryConstraintsCollectionName)
+        return db.collection(profilesCollectionName)
     }
 
     @Bean(name = ["crawl-request-topic"])
