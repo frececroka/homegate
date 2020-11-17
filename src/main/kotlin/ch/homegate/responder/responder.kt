@@ -259,10 +259,10 @@ class QueryResponder(
     }
 
     private fun reportProfile(profile: UserProfile) = """
-__Query Constraints__
+*Query Constraints*
 ${reportQueryConstraints(profile.queryConstraints)}
 
-__Airtable__
+*Airtable*
 ${reportAirtable(profile.airtableCredentials)}
     """.trimIndent()
 
