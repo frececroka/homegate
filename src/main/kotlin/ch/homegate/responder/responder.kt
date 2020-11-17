@@ -70,6 +70,9 @@ class QueryResponder(
         updateBinaryProperty("airtable") { apiKey, appId ->
             copy(airtableCredentials = AirtableCredentials(apiKey, appId)) },
 
+        updateNullaryProperty("remove_airtable") {
+            copy(airtableCredentials = null) },
+
         handleCallback(ReplyOption.Delete.toString()) { message, homegateId, _ ->
             if (message != null) deleteMessage(message)
             if (homegateId != null) airtableBackend.delete(homegateId)
@@ -202,6 +205,11 @@ class QueryResponder(
 
         reportConfig(chatId)
     }
+
+    private fun updateNullaryProperty(
+        propertyName: String,
+        updater: UserProfile.() -> UserProfile
+    ) = updateProperty(propertyName, 0) { _ -> updater() }
 
     private fun updateUnaryProperty(
         propertyName: String,
