@@ -1,5 +1,6 @@
 package ch.homegate.crawler.consumers
 
+import ch.homegate.UserProfileRepository
 import ch.homegate.airtable.AirtableBackend
 import ch.homegate.client.http.ListingResponse
 import com.google.common.eventbus.Subscribe
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component
 @KtorExperimentalAPI
 @Suppress("unused")
 class AirtableRecorder(
-    private val airtableBackend: AirtableBackend,
+    val profileRepository: UserProfileRepository
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -25,7 +26,16 @@ class AirtableRecorder(
     fun saveToAirtable(message: Pair<Long, ListingResponse>) = runBlocking {
         val (chatId, result) = message
         log.info("Saving entry for result ${result.id} (belonging to chat $chatId) to Airtable")
-        airtableBackend.add(result)
+        val profile = profileRepository.get(chatId)
+        val credentials = profile.airtableCredentials
+        if (credentials != null) {
+            log.info("The user has connected to Airtable")
+            val airtableBackend = AirtableBackend(credentials.apiKey, credentials.appId)
+            airtableBackend.add(result)
+            log.info("Entry ${result.id} saved")
+        } else {
+            log.info("The user has not connected to Airtable")
+        }
     }
 
 }

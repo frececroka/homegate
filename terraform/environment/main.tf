@@ -5,9 +5,6 @@ locals {
     FIRESTORE_LISTINGS_COLLECTION = "${var.name}.listings"
     FIRESTORE_PROFILES_COLLECTION = "${var.name}.profiles"
 
-    AIRTABLE_API_KEY = var.airtable_api_key
-    AIRTABLE_APP_ID = var.airtable_app_id
-
     CRAWL_REQUEST_TOPIC = google_pubsub_topic.crawler.id
 
     SPRING_PROFILES_ACTIVE = "gcf"

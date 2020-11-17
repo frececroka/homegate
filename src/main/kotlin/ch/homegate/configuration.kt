@@ -1,6 +1,5 @@
 package ch.homegate
 
-import ch.homegate.airtable.AirtableBackend
 import ch.homegate.crawler.consumers.AirtableRecorder
 import ch.homegate.crawler.consumers.TelegramNotifier
 import com.github.kotlintelegrambot.bot
@@ -47,13 +46,6 @@ open class CommonConfiguration {
     ) = bot {
         this.token = token
     }
-
-    @Bean
-    @KtorExperimentalAPI
-    open fun airtableBackend(
-        @Value("\${airtable.api_key}") apiKey: String,
-        @Value("\${airtable.app_id}") appId: String,
-    ) = AirtableBackend(apiKey, appId)
 
 }
 
