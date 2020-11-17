@@ -15,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import java.lang.Exception
 
 @Component
 @Profile("local", "gcf")
@@ -53,18 +54,24 @@ class QueryResponder(
             runBlocking { initiateRemoveArea(message.chat.id) }
         },
 
-        updateProperty("min_price") {
+        updateUnaryProperty("min_price") {
             copy(queryConstraints = queryConstraints.copy(minPrice = it.toInt())) },
-        updateProperty("max_price") {
+        updateUnaryProperty("max_price") {
             copy(queryConstraints = queryConstraints.copy(maxPrice = it.toInt())) },
-        updateProperty("min_rooms") {
+        updateUnaryProperty("min_rooms") {
             copy(queryConstraints = queryConstraints.copy(minRooms = it.toInt())) },
-        updateProperty("max_rooms") {
+        updateUnaryProperty("max_rooms") {
             copy(queryConstraints = queryConstraints.copy(maxRooms = it.toInt())) },
-        updateProperty("min_space") {
+        updateUnaryProperty("min_space") {
             copy(queryConstraints = queryConstraints.copy(minSpace = it.toInt())) },
-        updateProperty("max_space") {
+        updateUnaryProperty("max_space") {
             copy(queryConstraints = queryConstraints.copy(maxSpace = it.toInt())) },
+
+        updateBinaryProperty("airtable") { apiKey, appId ->
+            copy(airtableCredentials = AirtableCredentials(apiKey, appId)) },
+
+        updateNullaryProperty("remove_airtable") {
+            copy(airtableCredentials = null) },
 
         handleCallback(ReplyOption.Delete.toString()) { message, homegateId, _ ->
             if (message != null) deleteMessage(message)
@@ -199,19 +206,39 @@ class QueryResponder(
         reportConfig(chatId)
     }
 
-    private fun updateProperty(
+    private fun updateNullaryProperty(
+        propertyName: String,
+        updater: UserProfile.() -> UserProfile
+    ) = updateProperty(propertyName, 0) { _ -> updater() }
+
+    private fun updateUnaryProperty(
         propertyName: String,
         updater: UserProfile.(String) -> UserProfile
+    ) = updateProperty(propertyName, 1) { args -> updater(args[0]) }
+
+    private fun updateBinaryProperty(
+        propertyName: String,
+        updater: UserProfile.(String, String) -> UserProfile
+    ) = updateProperty(propertyName, 2) { args -> updater(args[0], args[1]) }
+
+    private fun updateProperty(
+        propertyName: String,
+        n: Int,
+        updater: UserProfile.(List<String>) -> UserProfile
     ): CommandHandler {
         return handleCommand(propertyName) { message, args ->
             val chatId = message.chat.id
-            if (args.size == 1) {
-                userProfileRepository.update(chatId) {
-                    updater(it, args[0])
+            if (args.size == n) {
+                try {
+                    userProfileRepository.update(chatId) {
+                        updater(it, args)
+                    }
+                    reportConfig(chatId)
+                } catch (e: ProcessCommandException) {
+                    telegram.sendMessage(chatId, e.message ?: "Command failed.")
                 }
-                reportConfig(chatId)
             } else {
-                telegram.sendMessage(chatId, "Please provide exactly one argument.")
+                telegram.sendMessage(chatId, "Please provide exactly $n argument(s).")
             }
         }
     }
@@ -263,3 +290,5 @@ class QueryResponder(
     }
 
 }
+
+class ProcessCommandException(message: String) : Exception(message)

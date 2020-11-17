@@ -8,7 +8,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 data class UserProfile(
-    val queryConstraints: QueryConstraints = QueryConstraints()
+    val queryConstraints: QueryConstraints = QueryConstraints(),
+    val airtableCredentials: AirtableCredentials? = null
 )
 
 data class QueryConstraints(
@@ -19,6 +20,11 @@ data class QueryConstraints(
     val minSpace: Int? = null,
     val maxSpace: Int? = null,
     val areas: List<String> = listOf(),
+)
+
+data class AirtableCredentials(
+    val apiKey: String,
+    val appId: String
 )
 
 interface UserProfileRepository {
