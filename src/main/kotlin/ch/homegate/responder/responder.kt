@@ -135,7 +135,7 @@ class QueryResponder(
         }
         val greeting = javaClass.getResourceAsStream("/greeting.txt").bufferedReader().readText()
         telegram.sendMessage(chatId, greeting)
-        reportConfig(chatId)
+        reportProfile(chatId)
     }
 
     private suspend fun searchArea(message: Message, args: List<String>) {
@@ -186,7 +186,7 @@ class QueryResponder(
             it.copy(queryConstraints = it.queryConstraints.copy(areas = (it.queryConstraints.areas.toSet() + setOf(locationId)).toList()))
         }
 
-        reportConfig(chatId)
+        reportProfile(chatId)
     }
 
     private fun initiateRemoveArea(chatId: Long) {
@@ -211,7 +211,7 @@ class QueryResponder(
             it.copy(queryConstraints = it.queryConstraints.copy(areas = it.queryConstraints.areas - setOf(locationId)))
         }
 
-        reportConfig(chatId)
+        reportProfile(chatId)
     }
 
     private fun updateNullaryProperty(
@@ -241,7 +241,7 @@ class QueryResponder(
                     userProfileRepository.update(chatId) {
                         updater(it, args)
                     }
-                    reportConfig(chatId)
+                    reportProfile(chatId)
                 } catch (e: ProcessCommandException) {
                     telegram.sendMessage(chatId, e.message ?: "Command failed.")
                 }
@@ -251,12 +251,27 @@ class QueryResponder(
         }
     }
 
-    private fun reportConfig(chatId: Long) {
+    private fun reportProfile(chatId: Long) {
         val profile = userProfileRepository.get(chatId)
-        val stringifiedProfile = reportQueryConstraints(profile.queryConstraints)
-        telegram.sendMessage(chatId, "Your current search parameters are as follows:")
-        telegram.sendMessage(chatId, stringifiedProfile)
+        val stringifiedProfile = reportProfile(profile)
+        telegram.sendMessage(chatId, "Your current configuration is as follows:")
+        telegram.sendMessage(chatId, stringifiedProfile, ParseMode.MARKDOWN)
     }
+
+    private fun reportProfile(profile: UserProfile) = """
+*Query Constraints*
+${reportQueryConstraints(profile.queryConstraints)}
+
+*Airtable*
+${reportAirtable(profile.airtableCredentials)}
+    """.trimIndent()
+
+    private fun reportAirtable(airtableCredentials: AirtableCredentials?) =
+        if (airtableCredentials != null) {
+            "configured"
+        } else {
+            "not configured"
+        }
 
     private fun reportQueryConstraints(constraints: QueryConstraints): String {
         val areasLines =
