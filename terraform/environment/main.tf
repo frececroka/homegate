@@ -3,7 +3,7 @@ locals {
     TELEGRAM_TOKEN = var.telegram_token
 
     FIRESTORE_LISTINGS_COLLECTION = "${var.name}.listings"
-    FIRESTORE_PROFILES_COLLECTION = "${var.name}.query-constraints"
+    FIRESTORE_PROFILES_COLLECTION = "${var.name}.profiles"
 
     AIRTABLE_API_KEY = var.airtable_api_key
     AIRTABLE_APP_ID = var.airtable_app_id
