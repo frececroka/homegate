@@ -1,6 +1,6 @@
 package ch.homegate.initiator
 
-import ch.homegate.QueryConstraintsRepository
+import ch.homegate.UserProfileRepository
 import com.google.common.eventbus.EventBus
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 @Profile("local", "gcf")
 @Suppress("UnstableApiUsage")
 class CrawlInitiator(
-    private val queryConstraintsRepository: QueryConstraintsRepository,
+    private val userProfileRepository: UserProfileRepository,
     @Qualifier("crawl-request-events") private val eventBus: EventBus
 ) {
 
@@ -19,7 +19,7 @@ class CrawlInitiator(
 
     fun initiate() {
         log.info("Retreiving all query constraints")
-        for (item in queryConstraintsRepository.getAll()) {
+        for (item in userProfileRepository.getAll()) {
             log.info("Sending crawl request: $item")
             eventBus.post(item)
         }

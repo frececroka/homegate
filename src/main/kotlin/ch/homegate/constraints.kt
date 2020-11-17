@@ -7,6 +7,10 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
+data class UserProfile(
+    val queryConstraints: QueryConstraints = QueryConstraints()
+)
+
 data class QueryConstraints(
     val minPrice: Int? = null,
     val maxPrice: Int? = null,
@@ -17,31 +21,29 @@ data class QueryConstraints(
     val areas: List<String> = listOf(),
 )
 
-interface QueryConstraintsRepository {
-    fun get(chatId: Long): QueryConstraints
-    fun getAll(): List<Pair<Long, QueryConstraints>>
-    fun update(chatId: Long, update: (QueryConstraints) -> QueryConstraints)
+interface UserProfileRepository {
+    fun get(chatId: Long): UserProfile
+    fun getAll(): List<Pair<Long, UserProfile>>
+    fun update(chatId: Long, update: (UserProfile) -> UserProfile)
 }
 
 @Component
 @Profile("local")
 @Suppress("unused")
-class LocalQueryConstraintsRepository(
-    @Qualifier("query-constraints-db") private val db: JsonDb
-) : QueryConstraintsRepository {
+class LocalUserProfileRepository(
+    @Qualifier("profile-db") private val db: JsonDb
+) : UserProfileRepository {
 
-    override fun get(chatId: Long): QueryConstraints =
-        db.get<QueryConstraints>(chatId.toString(), QueryConstraints::class.java) ?: QueryConstraints()
+    override fun get(chatId: Long): UserProfile =
+        db.get<UserProfile>(chatId.toString(), UserProfile::class.java) ?: UserProfile()
 
-    override fun getAll(): List<Pair<Long, QueryConstraints>> {
-        return db.findAll<QueryConstraints>({ true }, QueryConstraints::class.java)
-            .map { (chatId, queryConstraints) -> Pair(chatId.toLong(), queryConstraints) }
+    override fun getAll(): List<Pair<Long, UserProfile>> {
+        return db.findAll<UserProfile>({ true }, UserProfile::class.java)
+            .map { (chatId, profile) -> Pair(chatId.toLong(), profile) }
     }
 
-    override fun update(chatId: Long, update: (QueryConstraints) -> QueryConstraints) {
-        val constraints = get(chatId)
-        val updatedConstraints = update(constraints)
-        db.set(chatId.toString(), updatedConstraints)
+    override fun update(chatId: Long, update: (UserProfile) -> UserProfile) {
+        db.set(chatId.toString(), update(get(chatId)))
     }
 
 }
@@ -49,23 +51,23 @@ class LocalQueryConstraintsRepository(
 @Component
 @Profile("gcf")
 @Suppress("unused")
-class FirestoreQueryConstraintsRepository(
+class FirestoreUserProfileRepository(
     private val db: Firestore,
-    @Qualifier("query-constraints-db") private val collection: CollectionReference
-) : QueryConstraintsRepository {
+    @Qualifier("profile-db") private val collection: CollectionReference
+) : UserProfileRepository {
 
-    override fun get(chatId: Long): QueryConstraints {
+    override fun get(chatId: Long): UserProfile {
         val doc = documentReference(chatId)
         return fromDocument(doc.get().get())
     }
 
-    override fun getAll(): List<Pair<Long, QueryConstraints>> =
+    override fun getAll(): List<Pair<Long, UserProfile>> =
         collection.listDocuments().map {
-            val queryConstraints = fromDocument(it.get().get())
-            Pair(it.id.toLong(), queryConstraints)
+            val profiles = fromDocument(it.get().get())
+            Pair(it.id.toLong(), profiles)
         }
 
-    override fun update(chatId: Long, update: (QueryConstraints) -> QueryConstraints) {
+    override fun update(chatId: Long, update: (UserProfile) -> UserProfile) {
         val doc = documentReference(chatId)
         db.runTransaction {
             val constraints = fromDocument(it.get(doc).get())
@@ -75,7 +77,7 @@ class FirestoreQueryConstraintsRepository(
     }
 
     private fun fromDocument(doc: DocumentSnapshot) =
-        doc.toObject(QueryConstraints::class.java) ?: QueryConstraints()
+        doc.toObject(UserProfile::class.java) ?: UserProfile()
 
     private fun documentReference(chatId: Long) = collection.document(chatId.toString())
 
