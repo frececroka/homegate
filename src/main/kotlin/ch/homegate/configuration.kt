@@ -1,5 +1,6 @@
 package ch.homegate
 
+import ch.homegate.airtable.AirtableBackend
 import ch.homegate.crawler.consumers.AirtableRecorder
 import ch.homegate.crawler.consumers.TelegramNotifier
 import com.github.kotlintelegrambot.bot
@@ -29,6 +30,8 @@ open class AppProperties {
 }
 
 @Configuration
+@Profile("local", "gcf")
+@KtorExperimentalAPI
 open class CommonConfiguration {
 
     @Bean(name = ["new-listing-events"])
@@ -45,6 +48,17 @@ open class CommonConfiguration {
         @Value("\${telegram.token}") token: String
     ) = bot {
         this.token = token
+    }
+
+    @Bean
+    open fun airtableBackendFactory(
+        profileRepository: UserProfileRepository
+    ) = { chatId: Long ->
+        val profile = profileRepository.get(chatId)
+        val credentials = profile.airtableCredentials
+        if (credentials != null) {
+            AirtableBackend(credentials.apiKey, credentials.appId)
+        } else null
     }
 
 }

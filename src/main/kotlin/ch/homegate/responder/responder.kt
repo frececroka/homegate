@@ -27,7 +27,7 @@ class QueryResponder(
     private val telegram: Bot,
     private val listingsRecorder: ListingsRecorder,
     private val userProfileRepository: UserProfileRepository,
-    private val airtableBackend: AirtableBackend,
+    private val airtableBackendFactory: (Long) -> AirtableBackend?,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -74,8 +74,13 @@ class QueryResponder(
             copy(airtableCredentials = null) },
 
         handleCallback(ReplyOption.Delete.toString()) { message, homegateId, _ ->
-            if (message != null) deleteMessage(message)
-            if (homegateId != null) airtableBackend.delete(homegateId)
+            if (message != null) {
+                deleteMessage(message)
+                if (homegateId != null) {
+                    val airtableBackend = airtableBackendFactory(message.chat.id)
+                    airtableBackend?.delete(homegateId)
+                }
+            }
         },
 
         handleListingReply(ReplyOption.Ignore, State.Rejected),
@@ -101,8 +106,11 @@ class QueryResponder(
     private fun handleListingReply(option: ReplyOption, state: State): CallbackQueryHandler =
         handleCallback(option.toString()) { _, homegateId, callbackQuery ->
             val message = callbackQuery.message
-            if (message != null) updateReplyKeyboard(message, option)
-            airtableBackend.setState(homegateId!!, state)
+            if (message != null) {
+                updateReplyKeyboard(message, option)
+                val airtableBackend = airtableBackendFactory(message.chat.id)
+                airtableBackend?.setState(homegateId!!, state)
+            }
         }
 
     private fun updateReplyKeyboard(message: Message, selected: ReplyOption) {
