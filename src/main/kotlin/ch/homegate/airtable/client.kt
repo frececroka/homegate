@@ -29,7 +29,7 @@ class AirtableClient(
             return http.request(urlBuilder.toString(), builder)
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Unauthorized) {
-                throw AirtableUnauthorizedException()
+                throw AirtableUnauthorizedException(e)
             } else throw e
         }
     }
@@ -92,4 +92,4 @@ class AirtableListingsTable(
 }
 
 
-class AirtableUnauthorizedException : Exception()
+class AirtableUnauthorizedException(e: ClientRequestException) : Exception(e)
