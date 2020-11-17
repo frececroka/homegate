@@ -20,6 +20,4 @@ module "environment" {
   source = "../environment"
   name = "prod"
   telegram_token = var.telegram_token
-  airtable_api_key = var.airtable_api_key
-  airtable_app_id = var.airtable_app_id
 }
