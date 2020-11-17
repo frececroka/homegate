@@ -1,6 +1,7 @@
 package ch.homegate.crawler.consumers
 
 import ch.homegate.airtable.AirtableBackend
+import ch.homegate.airtable.AirtableUnauthorizedException
 import ch.homegate.client.http.ListingResponse
 import com.google.common.eventbus.Subscribe
 import io.ktor.util.*
@@ -27,9 +28,13 @@ class AirtableRecorder(
         log.info("Saving entry for result ${result.id} (belonging to chat $chatId) to Airtable")
         val airtableBackend = airtableBackendFactory(chatId)
         if (airtableBackend != null) {
-            log.info("The user has connected to Airtable")
-            airtableBackend.add(result)
-            log.info("Entry ${result.id} saved")
+            log.info("The user has provided to Airtable credentials")
+            try {
+                airtableBackend.add(result)
+                log.info("Entry ${result.id} saved")
+            } catch (e: AirtableUnauthorizedException) {
+                log.info("The provided Airtable credentials are invalid")
+            }
         } else {
             log.info("The user has not connected to Airtable")
         }
