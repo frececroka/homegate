@@ -31,7 +31,7 @@ interface UserProfileRepository {
 @Profile("local")
 @Suppress("unused")
 class LocalUserProfileRepository(
-    @Qualifier("profile-db") private val db: JsonDb
+    @Qualifier("profiles-db") private val db: JsonDb
 ) : UserProfileRepository {
 
     override fun get(chatId: Long): UserProfile =
@@ -53,7 +53,7 @@ class LocalUserProfileRepository(
 @Suppress("unused")
 class FirestoreUserProfileRepository(
     private val db: Firestore,
-    @Qualifier("profile-db") private val collection: CollectionReference
+    @Qualifier("profiles-db") private val collection: CollectionReference
 ) : UserProfileRepository {
 
     override fun get(chatId: Long): UserProfile {
