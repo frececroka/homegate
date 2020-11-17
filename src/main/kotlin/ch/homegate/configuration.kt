@@ -69,7 +69,7 @@ open class LocalConfiguration {
     open fun listingsDb(db: JsonDb) = db.child("listings")
 
     @Bean(name = ["profile-db"])
-    open fun queryConstraintsDb(db: JsonDb) = db.child("constraints")
+    open fun queryConstraintsDb(db: JsonDb) = db.child("profiles")
 
 }
 
