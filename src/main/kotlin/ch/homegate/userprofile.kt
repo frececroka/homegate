@@ -23,8 +23,8 @@ data class QueryConstraints(
 )
 
 data class AirtableCredentials(
-    val apiKey: String,
-    val appId: String
+    val apiKey: String = "",
+    val appId: String = ""
 )
 
 interface UserProfileRepository {
