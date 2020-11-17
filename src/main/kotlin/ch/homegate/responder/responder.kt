@@ -254,7 +254,7 @@ class QueryResponder(
     private fun reportProfile(chatId: Long) {
         val profile = userProfileRepository.get(chatId)
         val stringifiedProfile = reportProfile(profile)
-        telegram.sendMessage(chatId, "Your current search parameters are as follows:")
+        telegram.sendMessage(chatId, "Your current configuration is as follows:")
         telegram.sendMessage(chatId, stringifiedProfile, ParseMode.MARKDOWN)
     }
 
