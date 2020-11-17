@@ -1,6 +1,5 @@
 package ch.homegate.crawler.consumers
 
-import ch.homegate.UserProfileRepository
 import ch.homegate.airtable.AirtableBackend
 import ch.homegate.client.http.ListingResponse
 import com.google.common.eventbus.Subscribe
