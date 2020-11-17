@@ -68,8 +68,8 @@ open class LocalConfiguration {
     @Bean(name = ["listings-db"])
     open fun listingsDb(db: JsonDb) = db.child("listings")
 
-    @Bean(name = ["query-constraints-db"])
-    open fun queryConstraintsDb(db: JsonDb) = db.child("constraints")
+    @Bean(name = ["profiles-db"])
+    open fun profilesDb(db: JsonDb) = db.child("profiles")
 
 }
 
@@ -94,13 +94,13 @@ open class GcfConfiguration {
         return db.collection(listingsCollectionName)
     }
 
-    @Bean(name = ["query-constraints-db"])
-    open fun queryConstraintsDb(
+    @Bean(name = ["profiles-db"])
+    open fun profileDb(
         db: Firestore,
-        @Value("\${firestore.query_constraints}")
-        queryConstraintsCollectionName: String,
+        @Value("\${firestore.profiles}")
+        profilesCollectionName: String,
     ): CollectionReference {
-        return db.collection(queryConstraintsCollectionName)
+        return db.collection(profilesCollectionName)
     }
 
     @Bean(name = ["crawl-request-topic"])

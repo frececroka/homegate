@@ -25,7 +25,7 @@ class QueryResponder(
     private val homegate: HomegateClient,
     private val telegram: Bot,
     private val listingsRecorder: ListingsRecorder,
-    private val constraintsRepository: QueryConstraintsRepository,
+    private val userProfileRepository: UserProfileRepository,
     private val airtableBackend: AirtableBackend,
 ) {
 
@@ -53,12 +53,18 @@ class QueryResponder(
             runBlocking { initiateRemoveArea(message.chat.id) }
         },
 
-        updateProperty("min_price") { copy(minPrice = it.toInt()) },
-        updateProperty("max_price") { copy(maxPrice = it.toInt()) },
-        updateProperty("min_rooms") { copy(minRooms = it.toInt()) },
-        updateProperty("max_rooms") { copy(maxRooms = it.toInt()) },
-        updateProperty("min_space") { copy(minSpace = it.toInt()) },
-        updateProperty("max_space") { copy(maxSpace = it.toInt()) },
+        updateProperty("min_price") {
+            copy(queryConstraints = queryConstraints.copy(minPrice = it.toInt())) },
+        updateProperty("max_price") {
+            copy(queryConstraints = queryConstraints.copy(maxPrice = it.toInt())) },
+        updateProperty("min_rooms") {
+            copy(queryConstraints = queryConstraints.copy(minRooms = it.toInt())) },
+        updateProperty("max_rooms") {
+            copy(queryConstraints = queryConstraints.copy(maxRooms = it.toInt())) },
+        updateProperty("min_space") {
+            copy(queryConstraints = queryConstraints.copy(minSpace = it.toInt())) },
+        updateProperty("max_space") {
+            copy(queryConstraints = queryConstraints.copy(maxSpace = it.toInt())) },
 
         handleCallback(ReplyOption.Delete.toString()) { message, homegateId, _ ->
             if (message != null) deleteMessage(message)
@@ -103,11 +109,13 @@ class QueryResponder(
 
     private fun handleStart(message: Message) {
         val chatId = message.chat.id
-        constraintsRepository.update(chatId) {
-            QueryConstraints(
-                minRooms = 3,
-                minSpace = 80,
-                maxPrice = 3800,
+        userProfileRepository.update(chatId) {
+            UserProfile(
+                queryConstraints = QueryConstraints(
+                    minRooms = 3,
+                    minSpace = 80,
+                    maxPrice = 3800,
+                )
             )
         }
         val greeting = javaClass.getResourceAsStream("/greeting.txt").bufferedReader().readText()
@@ -159,16 +167,16 @@ class QueryResponder(
         val chatId = message.chat.id
 
         val locationId = callbackQuery.data.split(" ")[1]
-        constraintsRepository.update(chatId) {
-            it.copy(areas = (it.areas.toSet() + setOf(locationId)).toList())
+        userProfileRepository.update(chatId) {
+            it.copy(queryConstraints = it.queryConstraints.copy(areas = (it.queryConstraints.areas.toSet() + setOf(locationId)).toList()))
         }
 
         reportConfig(chatId)
     }
 
     private fun initiateRemoveArea(chatId: Long) {
-        val constraints = constraintsRepository.get(chatId)
-        val replyOptions = constraints.areas
+        val profile = userProfileRepository.get(chatId)
+        val replyOptions = profile.queryConstraints.areas
             .map { InlineKeyboardButton(it, callbackData = "remove_area $it") }
             .map { listOf(it) }
         val replyMarkup = InlineKeyboardMarkup(replyOptions)
@@ -184,8 +192,8 @@ class QueryResponder(
         val chatId = message.chat.id
 
         val locationId = callbackQuery.data.split(" ")[1]
-        constraintsRepository.update(chatId) {
-            it.copy(areas = it.areas - setOf(locationId))
+        userProfileRepository.update(chatId) {
+            it.copy(queryConstraints = it.queryConstraints.copy(areas = it.queryConstraints.areas - setOf(locationId)))
         }
 
         reportConfig(chatId)
@@ -193,12 +201,12 @@ class QueryResponder(
 
     private fun updateProperty(
         propertyName: String,
-        updater: QueryConstraints.(String) -> QueryConstraints
+        updater: UserProfile.(String) -> UserProfile
     ): CommandHandler {
         return handleCommand(propertyName) { message, args ->
             val chatId = message.chat.id
             if (args.size == 1) {
-                constraintsRepository.update(chatId) {
+                userProfileRepository.update(chatId) {
                     updater(it, args[0])
                 }
                 reportConfig(chatId)
@@ -209,25 +217,29 @@ class QueryResponder(
     }
 
     private fun reportConfig(chatId: Long) {
-        val config = constraintsRepository.get(chatId)
+        val profile = userProfileRepository.get(chatId)
+        val stringifiedProfile = reportQueryConstraints(profile.queryConstraints)
+        telegram.sendMessage(chatId, "Your current search parameters are as follows:")
+        telegram.sendMessage(chatId, stringifiedProfile)
+    }
+
+    private fun reportQueryConstraints(constraints: QueryConstraints): String {
         val areasLines =
-            if (config.areas.isNotEmpty())
-                listOf("areas" to config.areas.joinToString(", "))
+            if (constraints.areas.isNotEmpty())
+                listOf("areas" to constraints.areas.joinToString(", "))
             else listOf()
         val properties = listOf(
-            "min price" to config.minPrice,
-            "max price" to config.maxPrice,
-            "min rooms" to config.minRooms,
-            "max rooms" to config.maxRooms,
-            "min space" to config.minSpace,
-            "max space" to config.maxSpace)
+            "min price" to constraints.minPrice,
+            "max price" to constraints.maxPrice,
+            "min rooms" to constraints.minRooms,
+            "max rooms" to constraints.maxRooms,
+            "min space" to constraints.minSpace,
+            "max space" to constraints.maxSpace)
         val propertyLines = properties
             .filter { (_, v) -> v != null }
             .map { (k, v) -> k to v.toString() }
-        val stringifiedConfig = (areasLines + propertyLines)
+        return (areasLines + propertyLines)
             .joinToString("\n") { (k, v) -> "$k = $v" }
-        telegram.sendMessage(chatId, "Your current search parameters are as follows:")
-        telegram.sendMessage(chatId, stringifiedConfig)
     }
 
     private fun handleCommand(command: String, handler: (Message, List<String>) -> Unit): CommandHandler {
