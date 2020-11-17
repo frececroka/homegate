@@ -25,7 +25,13 @@ class AirtableClient(
     suspend inline fun <reified T> api(path: String, params: Map<String, String>, builder: HttpRequestBuilder.() -> Unit): T {
         val urlBuilder = URIBuilder("https://api.airtable.com/v0/$appId/$path")
         params.forEach { (k, v) -> urlBuilder.addParameter(k, v) }
-        return http.request(urlBuilder.toString(), builder)
+        try {
+            return http.request(urlBuilder.toString(), builder)
+        } catch (e: ClientRequestException) {
+            if (e.response.status == HttpStatusCode.Unauthorized) {
+                throw AirtableUnauthorizedException(e)
+            } else throw e
+        }
     }
 
 }
@@ -84,3 +90,6 @@ class AirtableListingsTable(
     }
 
 }
+
+
+class AirtableUnauthorizedException(e: ClientRequestException) : Exception(e)

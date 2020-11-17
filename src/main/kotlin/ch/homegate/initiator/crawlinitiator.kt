@@ -19,9 +19,10 @@ class CrawlInitiator(
 
     fun initiate() {
         log.info("Retreiving all query constraints")
-        for (item in userProfileRepository.getAll()) {
-            log.info("Sending crawl request: $item")
-            eventBus.post(item)
+        for ((chatId, profile) in userProfileRepository.getAll()) {
+            val queryConstraints = profile.queryConstraints
+            log.info("Sending crawl request: ($chatId, $queryConstraints)")
+            eventBus.post(Pair(chatId, queryConstraints))
         }
     }
 

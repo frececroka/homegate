@@ -30,6 +30,8 @@ open class AppProperties {
 }
 
 @Configuration
+@Profile("local", "gcf")
+@KtorExperimentalAPI
 open class CommonConfiguration {
 
     @Bean(name = ["new-listing-events"])
@@ -49,11 +51,15 @@ open class CommonConfiguration {
     }
 
     @Bean
-    @KtorExperimentalAPI
-    open fun airtableBackend(
-        @Value("\${airtable.api_key}") apiKey: String,
-        @Value("\${airtable.app_id}") appId: String,
-    ) = AirtableBackend(apiKey, appId)
+    open fun airtableBackendFactory(
+        profileRepository: UserProfileRepository
+    ) = { chatId: Long ->
+        val profile = profileRepository.get(chatId)
+        val credentials = profile.airtableCredentials
+        if (credentials != null) {
+            AirtableBackend(credentials.apiKey, credentials.appId)
+        } else null
+    }
 
 }
 
