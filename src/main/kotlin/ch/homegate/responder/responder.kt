@@ -15,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import java.lang.Exception
 
 @Component
 @Profile("local", "gcf")
@@ -65,6 +66,17 @@ class QueryResponder(
             copy(queryConstraints = queryConstraints.copy(minSpace = it.toInt())) },
         updateProperty("max_space") {
             copy(queryConstraints = queryConstraints.copy(maxSpace = it.toInt())) },
+
+        updateProperty("airtable") {
+            val parts = it.split(" ", limit = 2)
+            if (parts.size == 2) {
+                val apiKey = parts[0].trim()
+                val appId = parts[1].trim()
+                copy(airtableCredentials = AirtableCredentials(apiKey, appId))
+            } else {
+                throw ProcessCommandException("Usage: /airtable [apiKey] [appId]")
+            }
+        },
 
         handleCallback(ReplyOption.Delete.toString()) { message, homegateId, _ ->
             if (message != null) deleteMessage(message)
@@ -206,10 +218,14 @@ class QueryResponder(
         return handleCommand(propertyName) { message, args ->
             val chatId = message.chat.id
             if (args.size == 1) {
-                userProfileRepository.update(chatId) {
-                    updater(it, args[0])
+                try {
+                    userProfileRepository.update(chatId) {
+                        updater(it, args[0])
+                    }
+                    reportConfig(chatId)
+                } catch (e: ProcessCommandException) {
+                    telegram.sendMessage(chatId, e.message ?: "Command failed.")
                 }
-                reportConfig(chatId)
             } else {
                 telegram.sendMessage(chatId, "Please provide exactly one argument.")
             }
@@ -263,3 +279,5 @@ class QueryResponder(
     }
 
 }
+
+class ProcessCommandException(message: String) : Exception(message)
